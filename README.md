@@ -15,7 +15,7 @@
 >
 > This project is provided as-is and is not actively maintained.
 
-For more background on Stripe's TypeScript migration, check out our [blog post](https://stripe.com/blog/migrating-to-typescript).
+For more background on Stripe's TypeScript migration, check out our [blog post](https://stripe.com/blog/migrating-to-typescript)!
 
 This is the codemod Stripe used to migrate 4m+ lines of [Flow](https://flow.org/en/) to [TypeScript](https://www.typescriptlang.org/).
 It has a few commands to automate the separate steps of a migration:
