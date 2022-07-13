@@ -18,6 +18,7 @@ export function transformPrivateTypes({
       const hasPrivateType =
         /\w\$\w/.test(id.name) && !state.config.keepPrivateTypes;
       const privateReactType = id.name.startsWith("React$");
+      const privateFlowType = id.name.startsWith("$FlowFixMe");
       const isTypeAnnotation = path.parentPath.type === "GenericTypeAnnotation";
       if ((hasPrivateType || privateReactType) && isTypeAnnotation) {
         const [qualification, name] = id.name.split("$");
@@ -30,6 +31,9 @@ export function transformPrivateTypes({
           state.config.filePath,
           reporter
         );
+      } else if (privateFlowType && isTypeAnnotation) {
+        // Using t.tsAnyKeyword() here eventually collides w/ another transformer that makes this "unknown"
+        replaceWith(path, t.identifier("any"), state.config.filePath, reporter);
       }
     },
   });

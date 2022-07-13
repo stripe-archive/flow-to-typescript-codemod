@@ -53,4 +53,22 @@ describe("transform type annotations", () => {
     `;
     expect(await transform(src)).toBe(expected);
   });
+
+  describe("with props", () => {
+    it("replaces $FlowFixMe no matter what", async () => {
+      const state = stateBuilder({
+        config: {
+          keepPrivateTypes: false,
+        },
+      });
+      const src = dedent`
+      // @flow
+      class Dashhboard extends Component<$FlowFixMeProps> {}`;
+      const expected = dedent`
+      class Dashhboard extends Component<any> {}`;
+      expect(await transform(src, state)).toBe(expected);
+    });
+  });
 });
+
+ 
