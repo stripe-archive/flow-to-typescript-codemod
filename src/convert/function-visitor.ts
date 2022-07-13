@@ -134,12 +134,21 @@ export const functionVisitor = <
           }
         }
       }
-      if (param.type === "Identifier") {
-        paramIsOptional =
-          param.optional ||
-          (param.typeAnnotation?.type === "TypeAnnotation" &&
-            param.typeAnnotation?.typeAnnotation.type ===
-              "NullableTypeAnnotation");
+      // This next block is somewhat complicated, but basically inspects the parameters to
+      // determine what combination of optional / null / undefined they should be.
+      // Flow and TypeScript handle optional parameters differently, and in TS we need to make sure
+      // an optional parameter is not followed by a non-optional one since in TS optional can be omitted.
+      if (param.type === "Identifier" && param.typeAnnotation) {
+        const isNullable =
+          param.typeAnnotation.type === "TypeAnnotation" &&
+          param.typeAnnotation.typeAnnotation.type === "NullableTypeAnnotation";
+        const hasVoid =
+          param.typeAnnotation.type === "TypeAnnotation" &&
+          param.typeAnnotation.typeAnnotation.type === "UnionTypeAnnotation" &&
+          param.typeAnnotation.typeAnnotation.types.some(
+            (unionType) => unionType.type === "VoidTypeAnnotation"
+          );
+        paramIsOptional = param.optional || isNullable || hasVoid;
       }
 
       if (!paramIsOptional) {
@@ -175,6 +184,18 @@ export const functionVisitor = <
             identifier.typeAnnotation.typeAnnotation = t.unionTypeAnnotation([
               identifier.typeAnnotation.typeAnnotation.typeAnnotation,
               t.nullLiteralTypeAnnotation(),
+              t.genericTypeAnnotation(t.identifier("undefined")),
+            ]);
+          } else if (
+            identifier.typeAnnotation.typeAnnotation.type ===
+            "UnionTypeAnnotation"
+          ) {
+            identifier.typeAnnotation.typeAnnotation.types =
+              identifier.typeAnnotation.typeAnnotation.types.filter(
+                (unionType) => unionType.type !== "VoidTypeAnnotation"
+              );
+            identifier.typeAnnotation.typeAnnotation = t.unionTypeAnnotation([
+              identifier.typeAnnotation.typeAnnotation,
               t.genericTypeAnnotation(t.identifier("undefined")),
             ]);
           } else {

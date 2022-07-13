@@ -26,6 +26,42 @@ describe("transform type annotations", () => {
     expect(await transform(src)).toBe(expected);
   });
 
+  it("Avoids marking void parameters if followed by non-optional", async () => {
+    const src = `function f(x: void, y: string){};`;
+    const expected = `function f(x: undefined, y: string){};`;
+    expect(await transform(src)).toBe(expected);
+  });
+
+  it("Marks void as optional if no other parameters", async () => {
+    const src = `function f(x: string | void, y?: string){};`;
+    const expected = `function f(x?: string, y?: string){};`;
+    expect(await transform(src)).toBe(expected);
+  });
+
+  it("Marks multiple void parameters optional with unions", async () => {
+    const src = `function f(x: T | void, y: ?string){};`;
+    const expected = `function f(x?: T, y?: string | null){};`;
+    expect(await transform(src)).toBe(expected);
+  });
+
+  it("Avoids optionals preceding nullables", async () => {
+    const src = `function f(x: ?T, y: string){};`;
+    const expected = `function f(x: T | null | undefined, y: string){};`;
+    expect(await transform(src)).toBe(expected);
+  });
+
+  it("Avoids optionals preceding non-optional unions", async () => {
+    const src = `function f(x: T | void, y: string){};`;
+    const expected = `function f(x: T | undefined, y: string){};`;
+    expect(await transform(src)).toBe(expected);
+  });
+
+  it("Convertsions optional unions preceding optionals", async () => {
+    const src = `function f(x: T | void, y?: string){};`;
+    const expected = `function f(x?: T, y?: string){};`;
+    expect(await transform(src)).toBe(expected);
+  });
+
   it("Converts void types to undefined", async () => {
     const src = dedent`
     const a: string = "";
