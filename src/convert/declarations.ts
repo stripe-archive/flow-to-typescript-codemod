@@ -453,6 +453,27 @@ export function transformDeclarations({
     ClassDeclaration(path) {
       const { node } = path;
       if (node.superClass && node.superTypeParameters) {
+        // If it extends React.Component, we may need to modify the type to make sure it's still valid
+        // in TS. Some parameters like null make it an invalid component.
+        const isReactComponent =
+          node.superClass.type === "MemberExpression" &&
+          t.isIdentifier(node.superClass.object) &&
+          t.isIdentifier(node.superClass.property) &&
+          node.superClass.object.name === "React" &&
+          node.superClass.property.name === "Component";
+
+        const nullSecondParam =
+          node.superTypeParameters.params.length === 2 &&
+          node.superTypeParameters.params[1].type ===
+            "NullLiteralTypeAnnotation";
+
+        // React.Component<Props, null> -> React.Component<Props> (null makes it invalid JSX)
+        if (isReactComponent && nullSecondParam) {
+          node.superTypeParameters.params =
+            node.superTypeParameters.params.slice(0, 1);
+        }
+
+        // Process the type parameters
         node.superTypeParameters = migrateTypeParameterInstantiation(
           reporter,
           state,

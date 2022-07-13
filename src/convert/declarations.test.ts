@@ -509,6 +509,16 @@ describe("transform declarations", () => {
     expect(await transform(src)).toBe(expected);
   });
 
+  it("Converts makes sure React.Component is valid JSX, with no null for state", async () => {
+    const src = dedent`class Foo extends React.Component<Props, null>  {
+      test(): string {return 'string'};
+    };`;
+    const expected = dedent`class Foo extends React.Component<Props> {
+      test(): string {return 'string'};
+    };`;
+    expect(await transform(src)).toBe(expected);
+  });
+
   it("Converts React.Node to React.ReactElement in render", async () => {
     const src = dedent`class Foo extends React.Component {
       render(): React.Node {return <div />};
