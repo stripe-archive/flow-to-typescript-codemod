@@ -41,7 +41,12 @@ export async function runPrimaryAsync(options: ConvertCommandCliArgs) {
     const isDirectory = fs.lstatSync(p).isDirectory();
     if (isDirectory) {
       filePromises.push(
-        findFlowFilesAsync(p, options.ignore, filePathReporter)
+        findFlowFilesAsync(
+          p,
+          options.ignore,
+          filePathReporter,
+          options.stripPathsForIgnore
+        )
       );
     } else {
       logger.info("Path to convert is a file, only converting single file.");

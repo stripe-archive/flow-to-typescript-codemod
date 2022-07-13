@@ -54,6 +54,8 @@ export interface ConvertCommandCliArgs extends SharedCommandCliArgs {
   skipNoFlow: boolean;
   // Disable Flow inference for performance
   disableFlow: boolean;
+  // Strip paths when passing them to ignore to allow relative/parent directories
+  stripPathsForIgnore: boolean;
 }
 
 export interface FixCommandCliArgs extends SharedCommandCliArgs {

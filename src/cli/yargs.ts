@@ -228,6 +228,12 @@ export const parseCommands = (
             default: false,
             describe:
               "Do not use Flow to get inferred types, just insert any. This is useful if the Flow server is taking a while to resolve types.",
+          })
+          .option("stripPathsForIgnore", {
+            type: "boolean",
+            default: false,
+            describe:
+              "Strip any leading relative parts when passing paths to ignore.",
           });
       },
       convert

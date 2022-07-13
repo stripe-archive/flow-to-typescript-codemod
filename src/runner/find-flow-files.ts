@@ -32,7 +32,8 @@ export type FlowFileList = Array<{ filePath: string; fileType: FlowFileType }>;
 export function findFlowFilesAsync(
   rootDirectory: string,
   ignoredDirectories: Array<string>,
-  reporter: MigrationReporter
+  reporter: MigrationReporter,
+  stripPathsForIgnore: boolean
 ): Promise<FlowFileList> {
   return new Promise((_resolve, _reject) => {
     // Tracks whether or not we have rejected our promise.
@@ -65,7 +66,12 @@ export function findFlowFilesAsync(
         }
         // Process every file name that we got from reading the directory.
         for (let i = 0; i < fileNames.length; i++) {
-          processFilePath(directory, fileNames[i], reporter);
+          processFilePath(
+            directory,
+            fileNames[i],
+            reporter,
+            stripPathsForIgnore
+          );
         }
         // We are done with this async task.
         done();
@@ -79,7 +85,8 @@ export function findFlowFilesAsync(
     function processFilePath(
       directory: string,
       fileName: string,
-      reporter: MigrationReporter
+      reporter: MigrationReporter,
+      stripPathsForIgnore: boolean
     ) {
       // If we were rejected then we should not continue.
       if (rejected === true) {
@@ -89,8 +96,12 @@ export function findFlowFilesAsync(
       waiting++;
       // Get the file path for this file.
       const filePath = path.join(directory, fileName);
-      // Check whether file should be skipped
-      if (ig.ignores(filePath)) {
+      // ignore doesn't handle relative paths, so strip them. This does not work in all edge cases so is behind a flag
+      const correctedPath = stripPathsForIgnore
+        ? filePath.replace(/^(?:\.\.\/)+/, "")
+        : filePath;
+      // ensure that path is valid so that ignore check doesn't throw
+      if (ignore.isPathValid(correctedPath) && ig.ignores(correctedPath)) {
         done();
         return;
       }
