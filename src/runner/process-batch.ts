@@ -8,7 +8,10 @@ import { runTransforms } from "./run-transforms";
 import MigrationReporter from "./migration-reporter";
 import { ConvertCommandCliArgs } from "../cli/arguments";
 import { defaultTransformerChain } from "../convert/default-transformer-chain";
-import { watermarkTransformRunner } from "../convert/transform-runners";
+import {
+  annotateNoFlowTransformRunner,
+  watermarkTransformRunner,
+} from "../convert/transform-runners";
 import { State } from "./state";
 import { ConfigurableTypeProvider } from "../convert/utils/configurable-type-provider";
 import { hasDeclaration } from "../convert/utils/common";
@@ -34,7 +37,11 @@ export async function processBatchAsync(
   await Promise.all(
     filePaths.map(async ({ filePath, fileType }) => {
       try {
-        if (fileType === FlowFileType.NO_FLOW && options.skipNoFlow) {
+        if (
+          (fileType === FlowFileType.NO_FLOW && options.skipNoFlow) ||
+          (fileType === FlowFileType.NO_ANNOTATION &&
+            !options.convertUnannotated)
+        ) {
           return;
         }
         const fileBuffer = await fs.readFile(filePath);
@@ -80,6 +87,13 @@ export async function processBatchAsync(
 
         if (options.watermark) {
           transforms.push(watermarkTransformRunner);
+        }
+
+        if (
+          fileType === FlowFileType.NO_ANNOTATION &&
+          options.convertUnannotated
+        ) {
+          transforms.push(annotateNoFlowTransformRunner);
         }
 
         await runTransforms(reporter, state, file, transforms);

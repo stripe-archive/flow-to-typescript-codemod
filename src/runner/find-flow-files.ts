@@ -18,6 +18,7 @@ const PRAGMA_BYTES = 5000;
 export enum FlowFileType {
   FLOW,
   NO_FLOW,
+  NO_ANNOTATION,
 }
 
 export type FlowFileList = Array<{ filePath: string; fileType: FlowFileType }>;
@@ -166,6 +167,7 @@ export function findFlowFilesAsync(
             filePaths.push({ filePath, fileType: FlowFileType.NO_FLOW });
             reporter.foundNoFlowAnnotation(filePath);
           } else {
+            filePaths.push({ filePath, fileType: FlowFileType.NO_ANNOTATION });
             reporter.foundNonFlowfile(filePath);
           }
           // Close the file.

@@ -10,6 +10,7 @@ import { transformPrivateTypes } from "./private-types";
 import { TransformerInput, Transformer } from "./transformer";
 import { transformTypeAnnotations } from "./type-annotations";
 import { removeFlowComments } from "./remove-flow-comments";
+import { annotateNoFlow } from "./annotate-no-flow";
 
 const standardTransformRunnerFactory = (transformer: Transformer) => {
   return (transformerInput: TransformerInput) => {
@@ -55,3 +56,6 @@ export const jsxSpreadTransformRunner: Transformer =
 
 export const removeFlowCommentTransformRunner: Transformer =
   standardTransformRunnerFactory(removeFlowComments);
+
+export const annotateNoFlowTransformRunner: Transformer =
+  standardTransformRunnerFactory(annotateNoFlow);

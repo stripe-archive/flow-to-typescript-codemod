@@ -56,6 +56,8 @@ export interface ConvertCommandCliArgs extends SharedCommandCliArgs {
   disableFlow: boolean;
   // Strip paths when passing them to ignore to allow relative/parent directories
   stripPathsForIgnore: boolean;
+  // Convert flow files with no annotations as no-Flow files
+  convertUnannotated: boolean;
 }
 
 export interface FixCommandCliArgs extends SharedCommandCliArgs {
