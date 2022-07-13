@@ -74,7 +74,7 @@ export async function removeUnusedErrors(
     }
 
     const errorStart = error.getStart();
-    if (!errorStart) {
+    if (errorStart === undefined) {
       return;
     }
 

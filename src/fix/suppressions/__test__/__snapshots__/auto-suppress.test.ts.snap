@@ -3,7 +3,7 @@
 exports[`autoSuppressErrors adds suppressions to suppressable errors 1`] = `
 "// Testing removing unused
 
-// @ts-expect-error - TS2322 - Type 'number' is not assignable to type 'string'.
+// @ts-expect-error - TS2322 - Type 'number' is not assignable to type 'string'. | TS2451 - Cannot redeclare block-scoped variable 'error1'.
 const error1: string = 0;
 
 // Line above suppression
@@ -23,13 +23,15 @@ export const foo = () => {
   /* @ts-expect-error not actually error */
   return \\"bar\\";
 };
-"
+
+// @ts-expect-error - TS2322 - Type 'number' is not assignable to type 'string'. | TS2451 - Cannot redeclare block-scoped variable 'error1'.
+const error1: string = 0;"
 `;
 
 exports[`autoSuppressErrors does not add if run twice 1`] = `
 "// Testing removing unused
 
-// @ts-expect-error - TS2322 - Type 'number' is not assignable to type 'string'.
+// @ts-expect-error - TS2322 - Type 'number' is not assignable to type 'string'. | TS2451 - Cannot redeclare block-scoped variable 'error1'.
 const error1: string = 0;
 
 // Line above suppression
@@ -49,5 +51,7 @@ export const foo = () => {
   /* @ts-expect-error not actually error */
   return \\"bar\\";
 };
-"
+
+// @ts-expect-error - TS2322 - Type 'number' is not assignable to type 'string'. | TS2451 - Cannot redeclare block-scoped variable 'error1'.
+const error1: string = 0;"
 `;
