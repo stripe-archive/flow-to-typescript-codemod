@@ -70,5 +70,3 @@ describe("transform type annotations", () => {
     });
   });
 });
-
- 

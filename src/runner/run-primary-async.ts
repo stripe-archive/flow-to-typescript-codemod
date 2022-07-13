@@ -197,7 +197,15 @@ export async function runPrimaryAsync(options: ConvertCommandCliArgs) {
       logger.info("Deleting all the Flow files.");
       const toRemoveCalls = [];
       for (const flowFilePath of flowFilePaths) {
-        toRemoveCalls.push(fs.remove(flowFilePath.filePath));
+        const wasSkipped =
+          (flowFilePath.fileType === FlowFileType.NO_FLOW &&
+            options.skipNoFlow) ||
+          (flowFilePath.fileType === FlowFileType.NO_ANNOTATION &&
+            !options.convertUnannotated);
+
+        if (!wasSkipped) {
+          toRemoveCalls.push(fs.remove(flowFilePath.filePath));
+        }
       }
       await Promise.all(toRemoveCalls);
     } else {
