@@ -1,0 +1,13 @@
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build and publish npm package
+        uses: grnhse/publish-javascript-package-to-github@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,9 +1,9 @@
 {
-  "name": "flow-to-typescript-codemod",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@grnhse/flow-to-typescript-codemod",
+  "version": "0.0.1",
   "description": "Stripe's codemod for converting Flow to TypeScript.",
-  "repository": "https://github.com/stripe-archive/flow-to-typescript-codemod",
+  "repository": "https://github.com/grnhse/flow-to-typescript-codemod",
+  "publishConfig": { "registry": "https://npm.pkg.github.com" },
   "license": "MIT",
   "author": "Stripe, Inc.",
   "types": "./flow.d.ts",
