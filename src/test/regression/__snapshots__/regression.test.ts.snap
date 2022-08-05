@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Regression tests flow_typescript_differences 1`] = `
-"import {Flow} from 'flow-to-typescript-codemod';
+"import {Flow} from '@grnhse/flow-to-typescript-codemod';
 // Examples taken from https://github.com/niieani/typescript-vs-flowtype
 
 // bounded polymorphism

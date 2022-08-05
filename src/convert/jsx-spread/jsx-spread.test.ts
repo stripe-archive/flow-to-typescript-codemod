@@ -20,7 +20,7 @@ describe("transform spread JSX attributes", () => {
       return <Mine it={it} {...rest} />
     }`;
     const expected = `
-    import {Flow} from 'flow-to-typescript-codemod';
+    import {Flow} from '@grnhse/flow-to-typescript-codemod';
     type Props = {
       it: string,
       foo: number
@@ -49,7 +49,7 @@ describe("transform spread JSX attributes", () => {
       return <Mine it={it} {...rest} />
     }`;
     const expected = `
-    import {Flow} from 'flow-to-typescript-codemod';
+    import {Flow} from '@grnhse/flow-to-typescript-codemod';
     type Props = {
       it: string,
       foo: number
@@ -82,7 +82,7 @@ describe("transform spread JSX attributes", () => {
       return <Mine {...rest} />
     }`;
     const expected = `
-    import {Flow} from 'flow-to-typescript-codemod';
+    import {Flow} from '@grnhse/flow-to-typescript-codemod';
     type Props = {
       it: string,
       foo: number
@@ -119,7 +119,7 @@ describe("transform spread JSX attributes", () => {
     }`;
 
     const expected = `
-    import {Flow} from 'flow-to-typescript-codemod';
+    import {Flow} from '@grnhse/flow-to-typescript-codemod';
     type Props = {
       it: string,
       foo: number
@@ -155,7 +155,7 @@ describe("transform spread JSX attributes", () => {
     }`;
 
     const expected = `
-    import {Flow} from 'flow-to-typescript-codemod';
+    import {Flow} from '@grnhse/flow-to-typescript-codemod';
     type Props = {
       it: string,
       foo: number
@@ -226,7 +226,7 @@ describe("transform spread JSX attributes", () => {
     }`;
 
     const expected = `
-    import {Flow} from 'flow-to-typescript-codemod';
+    import {Flow} from '@grnhse/flow-to-typescript-codemod';
     type State = {
       thing: boolean
     };
@@ -261,7 +261,7 @@ describe("transform spread JSX attributes", () => {
       return <Mine {...rest} />
     }`;
     const expected = `
-    import {Flow} from 'flow-to-typescript-codemod';
+    import {Flow} from '@grnhse/flow-to-typescript-codemod';
     type Props = {
       it: string,
       foo: number

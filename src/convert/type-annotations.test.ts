@@ -541,7 +541,7 @@ describe("transform type annotations", () => {
   it("Converts React.AbstractComponent to Flow.AbstractComponent", async () => {
     const src = `export type Component = React.AbstractComponent<Config, Instance>;`;
     const expected = dedent`
-    import {Flow} from 'flow-to-typescript-codemod';
+    import {Flow} from '@grnhse/flow-to-typescript-codemod';
     export type Component = Flow.AbstractComponent<Config, Instance>;`;
     expect(await transform(src)).toBe(expected);
   });
@@ -549,7 +549,7 @@ describe("transform type annotations", () => {
   it("Converts React.AbstractComponent and matches parameters", async () => {
     const src = `export type Component = React.AbstractComponent<Config>;`;
     const expected = dedent`
-    import {Flow} from 'flow-to-typescript-codemod';
+    import {Flow} from '@grnhse/flow-to-typescript-codemod';
     export type Component = Flow.AbstractComponent<Config>;`;
     expect(await transform(src)).toBe(expected);
   });
@@ -671,7 +671,7 @@ class C {
   it("Converts Class to Flow.Class", async () => {
     const src = `(storeClass: Class<Store>) => {};`;
     const expected = dedent`
-    import {Flow} from 'flow-to-typescript-codemod';
+    import {Flow} from '@grnhse/flow-to-typescript-codemod';
     (storeClass: Flow.Class<Store>) => {};`;
     expect(await transform(src)).toBe(expected);
   });
@@ -686,7 +686,7 @@ class C {
   it("Converts $Diff to Flow.Diff", async () => {
     const src = `type Test = $Diff<A, B>;`;
     const expected = dedent`
-    import {Flow} from 'flow-to-typescript-codemod';
+    import {Flow} from '@grnhse/flow-to-typescript-codemod';
     type Test = Flow.Diff<A, B>;`;
     expect(await transform(src)).toBe(expected);
   });
@@ -699,7 +699,7 @@ class C {
   it("Converts $Rest to Partial<Flow.Diff>", async () => {
     const src = `type Test = $Rest<A, B>;`;
     const expected = dedent`
-    import {Flow} from 'flow-to-typescript-codemod';
+    import {Flow} from '@grnhse/flow-to-typescript-codemod';
     type Test = Partial<Flow.Diff<A, B>>;`;
     expect(await transform(src)).toBe(expected);
   });
@@ -846,7 +846,7 @@ class C {
     it("Converts $ObjMap to Flow.ObjMap", async () => {
       const src = `type Test = $ObjMap<A, B>;`;
       const expected = dedent`
-      import {Flow} from 'flow-to-typescript-codemod';
+      import {Flow} from '@grnhse/flow-to-typescript-codemod';
       type Test = Flow.ObjMap<A, B>;`;
       expect(await transform(src)).toBe(expected);
     });

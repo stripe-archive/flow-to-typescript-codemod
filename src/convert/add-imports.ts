@@ -14,7 +14,7 @@ export function addImports({ state, file }: TransformerInput) {
         if (state.usedUtils) {
           const importDeclaration = t.importDeclaration(
             [t.importSpecifier(t.identifier("Flow"), t.identifier("Flow"))],
-            t.stringLiteral("flow-to-typescript-codemod")
+            t.stringLiteral("@grnhse/flow-to-typescript-codemod")
           );
           path.node.body = [importDeclaration, ...path.node.body];
         }

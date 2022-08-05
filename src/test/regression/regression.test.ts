@@ -85,11 +85,11 @@ async function getData(filename: string) {
 
 // The in memory typescript compiler can't seem to find imported modules.
 // This hack to replace imports with absolute paths seems to work.
-// Don't apply this before the snapshot, or your snapshot will have absoulte paths
+// Don't apply this before the snapshot, or your snapshot will have absolute paths
 function replaceImports(data: string) {
   return data
     .replace(
-      /flow-to-typescript-codemod/,
+      /@grnhse\/flow-to-typescript-codemod/,
       require.resolve("../../../flow.d").replace(/.d.ts/, "")
     )
     .replace(
