@@ -22,7 +22,27 @@ export const foo = () => {
   return \\"bar\\";
 };
 
-const error1: string = 0;"
+const error1: string = 0;
+
+// Testing suppression inside tagged template literal (a la styled components)
+type Bar = { baz: {} }
+type StringProducer = (arg0: Bar) => string;
+
+export function foo2(_strings: TemplateStringsArray, ...stringProducers: Array<StringProducer>) {
+  return '';
+}
+
+const bar = foo2\`
+  hello
+  \${({baz}: Bar) => baz.bun}
+  world
+  \${({baz}: Bar) => baz.bun}
+  again
+  \${({baz}: Bar) => baz.bun}
+  and
+  \${({baz}: Bar) => baz.bun}
+  again
+\`"
 `;
 
 exports[`removeUnused removes unused error suppressions 1`] = `
@@ -47,7 +67,27 @@ export const foo = () => {
   return \\"bar\\";
 };
 
-const error1: string = 0;"
+const error1: string = 0;
+
+// Testing suppression inside tagged template literal (a la styled components)
+type Bar = { baz: {} }
+type StringProducer = (arg0: Bar) => string;
+
+export function foo2(_strings: TemplateStringsArray, ...stringProducers: Array<StringProducer>) {
+  return '';
+}
+
+const bar = foo2\`
+  hello
+  \${({baz}: Bar) => baz.bun}
+  world
+  \${({baz}: Bar) => baz.bun}
+  again
+  \${({baz}: Bar) => baz.bun}
+  and
+  \${({baz}: Bar) => baz.bun}
+  again
+\`"
 `;
 
 exports[`removeUnused works with autoSuppress 1`] = `
@@ -75,5 +115,29 @@ export const foo = () => {
 };
 
 // @ts-expect-error - TS2322 - Type 'number' is not assignable to type 'string'. | TS2451 - Cannot redeclare block-scoped variable 'error1'.
-const error1: string = 0;"
+const error1: string = 0;
+
+// Testing suppression inside tagged template literal (a la styled components)
+type Bar = { baz: {} }
+type StringProducer = (arg0: Bar) => string;
+
+export function foo2(_strings: TemplateStringsArray, ...stringProducers: Array<StringProducer>) {
+  return '';
+}
+
+const bar = foo2\`
+  hello
+\${/* @ts-expect-error - TS2339 - Property 'bun' does not exist on type '{}'. */ \\"\\"}
+  \${({baz}: Bar) => baz.bun}
+  world
+\${/* @ts-expect-error - TS2339 - Property 'bun' does not exist on type '{}'. */ \\"\\"}
+  \${({baz}: Bar) => baz.bun}
+  again
+\${/* @ts-expect-error - TS2339 - Property 'bun' does not exist on type '{}'. */ \\"\\"}
+  \${({baz}: Bar) => baz.bun}
+  and
+\${/* @ts-expect-error - TS2339 - Property 'bun' does not exist on type '{}'. */ \\"\\"}
+  \${({baz}: Bar) => baz.bun}
+  again
+\`"
 `;

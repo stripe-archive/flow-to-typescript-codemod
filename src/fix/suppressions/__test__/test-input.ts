@@ -20,3 +20,23 @@ export const foo = () => {
 };
 
 const error1: string = 0;
+
+// Testing suppression inside tagged template literal (a la styled components)
+type Bar = { baz: {} }
+type StringProducer = (arg0: Bar) => string;
+
+export function foo2(_strings: TemplateStringsArray, ...stringProducers: Array<StringProducer>) {
+  return '';
+}
+
+const bar = foo2`
+  hello
+  ${({baz}: Bar) => baz.bun}
+  world
+  ${({baz}: Bar) => baz.bun}
+  again
+  ${({baz}: Bar) => baz.bun}
+  and
+  ${({baz}: Bar) => baz.bun}
+  again
+`

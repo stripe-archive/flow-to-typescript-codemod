@@ -31,6 +31,9 @@ function makeComment({
   if (commentType === CommentType.Jsx) {
     return `{ /* ${commentText} */}\n`;
   }
+  if (commentType === CommentType.Template) {
+    return `\${/* ${commentText} */ ""}\n`;
+  }
   return `// ${commentText}\n`;
 }
 
@@ -108,16 +111,26 @@ export async function autoSuppressErrors(
     // Find out which comment we should make
     const errorLine = sourceFile.getDescendantAtPos(errorStartLine);
     const commentsForFile = diagnosticsByFile.get(sourceFile) ?? {};
+
+    const isJsxParent = [
+      ts.SyntaxKind.JsxElement,
+      ts.SyntaxKind.JsxFragment,
+      ts.SyntaxKind.JsxExpression,
+      ts.SyntaxKind.JsxClosingElement,
+    ].some((elementType) => {
+      return errorLine?.getParentIfKind(elementType) != null;
+    });
+    let commentType = isJsxParent ? CommentType.Jsx : undefined;
+    if (
+      errorLine?.getParentIfKind(ts.SyntaxKind.TemplateExpression) ||
+      errorLine?.getParentIfKind(ts.SyntaxKind.TemplateSpan)
+    ) {
+      commentType ||= CommentType.Template;
+    }
+    commentType ||= CommentType.Standard;
     const commentsForLine = commentsForFile[errorStartLine] ?? {
       position: errorStartLine,
-      commentType: [
-        ts.SyntaxKind.JsxElement,
-        ts.SyntaxKind.JsxFragment,
-        ts.SyntaxKind.JsxExpression,
-        ts.SyntaxKind.JsxClosingElement,
-      ].some((elementType) => errorLine?.getParentIfKind(elementType) != null)
-        ? CommentType.Jsx
-        : CommentType.Standard,
+      commentType: commentType,
       diagnostics: [],
     };
 
