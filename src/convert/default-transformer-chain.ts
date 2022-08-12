@@ -11,6 +11,7 @@ import {
   removeFlowCommentTransformRunner,
 } from "./transform-runners";
 import { Transformer } from "./transformer";
+import { styledComponentTypes } from "./styled-component-types";
 
 /**
  * Default chain of babel transforms to run. Order will be preserved.
@@ -26,4 +27,5 @@ export const defaultTransformerChain: readonly Transformer[] = [
   jsxSpreadTransformRunner,
   importTransformRunner,
   removeFlowCommentTransformRunner,
+  styledComponentTypes,
 ];

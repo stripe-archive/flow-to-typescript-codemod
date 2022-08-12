@@ -212,6 +212,19 @@ export function replaceWith(
   }
 }
 
+export function remove(
+  path: NodePath<t.Node>,
+  filePath: string,
+  reporter: MigrationReporter
+) {
+  try {
+    path.remove();
+  } catch (e) {
+    // Catch the error so conversion of the file can continue.
+    reporter.error(filePath, e);
+  }
+}
+
 /**
  * Tries to return the nearest LOC, and returns a default if not found.
  */
