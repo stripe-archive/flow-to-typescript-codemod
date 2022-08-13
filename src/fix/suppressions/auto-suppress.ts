@@ -24,15 +24,18 @@ function makeComment({
   // If jira slug was not specified, don't include anything
   const fullJiraSlug = jiraSlug === "" ? "" : ` [${jiraSlug}]`;
 
+  // The diagnostic descriptions are too long to fit on one line, resulting in prettier reformatting ${...} style
+  // comments over multiple lines and breaking the suppression.
+  if (commentType === CommentType.Template) {
+    return `\${/* ${annotation}${fullJiraSlug} */ ""}\n`;
+  }
+
   const commentText = `${annotation}${fullJiraSlug} - ${diagnostics
     .map((diagnostic) => diagnosticToDescription(diagnostic))
     .join(" | ")}`;
 
   if (commentType === CommentType.Jsx) {
     return `{ /* ${commentText} */}\n`;
-  }
-  if (commentType === CommentType.Template) {
-    return `\${/* ${commentText} */ ""}\n`;
   }
   return `// ${commentText}\n`;
 }

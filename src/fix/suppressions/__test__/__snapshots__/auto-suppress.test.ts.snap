@@ -37,16 +37,16 @@ export function foo2(_strings: TemplateStringsArray, ...stringProducers: Array<S
 
 const bar = foo2\`
   hello
-\${/* @ts-expect-error - TS2339 - Property 'bun' does not exist on type '{}'. */ \\"\\"}
+\${/* @ts-expect-error */ \\"\\"}
   \${({baz}: Bar) => baz.bun}
   world
-\${/* @ts-expect-error - TS2339 - Property 'bun' does not exist on type '{}'. */ \\"\\"}
+\${/* @ts-expect-error */ \\"\\"}
   \${({baz}: Bar) => baz.bun}
   again
-\${/* @ts-expect-error - TS2339 - Property 'bun' does not exist on type '{}'. */ \\"\\"}
+\${/* @ts-expect-error */ \\"\\"}
   \${({baz}: Bar) => baz.bun}
   and
-\${/* @ts-expect-error - TS2339 - Property 'bun' does not exist on type '{}'. */ \\"\\"}
+\${/* @ts-expect-error */ \\"\\"}
   \${({baz}: Bar) => baz.bun}
   again
 \`"
@@ -89,17 +89,17 @@ export function foo2(_strings: TemplateStringsArray, ...stringProducers: Array<S
 
 const bar = foo2\`
   hello
-\${/* @ts-expect-error - TS2345 - Argument of type 'string' is not assignable to parameter of type 'StringProducer'. */ \\"\\"}
-\${/* @ts-expect-error - TS2339 - Property 'bun' does not exist on type '{}'. */ \\"\\"}
+\${/* @ts-expect-error */ \\"\\"}
+\${/* @ts-expect-error */ \\"\\"}
   \${({baz}: Bar) => baz.bun}
   world
-\${/* @ts-expect-error - TS2339 - Property 'bun' does not exist on type '{}'. */ \\"\\"}
+\${/* @ts-expect-error */ \\"\\"}
   \${({baz}: Bar) => baz.bun}
   again
-\${/* @ts-expect-error - TS2339 - Property 'bun' does not exist on type '{}'. */ \\"\\"}
+\${/* @ts-expect-error */ \\"\\"}
   \${({baz}: Bar) => baz.bun}
   and
-\${/* @ts-expect-error - TS2339 - Property 'bun' does not exist on type '{}'. */ \\"\\"}
+\${/* @ts-expect-error */ \\"\\"}
   \${({baz}: Bar) => baz.bun}
   again
 \`"
