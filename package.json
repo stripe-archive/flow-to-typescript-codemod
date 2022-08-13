@@ -1,6 +1,6 @@
 {
   "name": "@grnhse/flow-to-typescript-codemod",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Stripe's codemod for converting Flow to TypeScript.",
   "repository": "https://github.com/grnhse/flow-to-typescript-codemod",
   "publishConfig": { "registry": "https://npm.pkg.github.com" },
