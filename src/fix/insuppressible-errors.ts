@@ -5,6 +5,9 @@ import { Diagnostic, ts } from "ts-morph";
  * that continued to break our TS build even though they were suppressed.
  *
  * Feel free to add additional error codes here as you find them.
+ *
+ * You can view the list of possible diagnostic messages here:
+ * https://github.com/microsoft/TypeScript/blob/main/src/compiler/diagnosticMessages.json
  */
 export const insuppressibleErrors = new Set([
   // Only named exports may use 'export type'.
