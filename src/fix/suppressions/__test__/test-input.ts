@@ -40,3 +40,6 @@ const bar = foo2`
   ${({baz}: Bar) => baz.bun}
   again
 `
+
+// Testing single line template literal
+const baz = foo2`${({baz}: Bar) => baz.bun}`
