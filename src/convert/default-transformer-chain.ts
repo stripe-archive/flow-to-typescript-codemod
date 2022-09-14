@@ -9,6 +9,7 @@ import {
   privateTypeTransformRunner,
   typeAnnotationTransformRunner,
   removeFlowCommentTransformRunner,
+  reactNodeTransformRunner,
 } from "./transform-runners";
 import { Transformer } from "./transformer";
 import { styledComponentTypes } from "./styled-component-types";
@@ -28,4 +29,5 @@ export const defaultTransformerChain: readonly Transformer[] = [
   importTransformRunner,
   removeFlowCommentTransformRunner,
   styledComponentTypes,
+  reactNodeTransformRunner,
 ];

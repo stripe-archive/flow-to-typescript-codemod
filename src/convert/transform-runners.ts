@@ -11,6 +11,7 @@ import { TransformerInput, Transformer } from "./transformer";
 import { transformTypeAnnotations } from "./type-annotations";
 import { removeFlowComments } from "./remove-flow-comments";
 import { annotateNoFlow } from "./annotate-no-flow";
+import { transformReactNode } from "./transform-react-node";
 
 const standardTransformRunnerFactory = (transformer: Transformer) => {
   return (transformerInput: TransformerInput) => {
@@ -59,3 +60,6 @@ export const removeFlowCommentTransformRunner: Transformer =
 
 export const annotateNoFlowTransformRunner: Transformer =
   standardTransformRunnerFactory(annotateNoFlow);
+
+export const reactNodeTransformRunner: Transformer =
+  standardTransformRunnerFactory(transformReactNode);
