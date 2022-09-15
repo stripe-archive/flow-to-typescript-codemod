@@ -1,3 +1,6 @@
+// import a js file to force an error message that includes an absolute path to be made relative
+import foo from './test-javascript-input';
+
 // Testing removing unused
 
 const error1: string = 0;

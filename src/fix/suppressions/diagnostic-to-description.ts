@@ -14,12 +14,23 @@ function isDiagnosticMessageChain(
  * main error message.
  */
 function getDiagnosticMessage(diagnostic: Diagnostic): string {
-  const messageText = diagnostic.getMessageText();
+  let messageText = diagnostic.getMessageText();
+
   if (isDiagnosticMessageChain(messageText)) {
-    return messageText.getMessageText();
+    messageText = messageText.getMessageText();
   }
 
-  return messageText;
+  return removeAbsoluteProjectPaths(messageText);
+}
+
+/**
+ * Some diagnostic messages include absolute paths, which is not environment agnostic
+ *
+ * process.cwd() is hacky and will only work if the codemod is a sibling of the project being migrated.
+ */
+function removeAbsoluteProjectPaths(message: string): string {
+  const projectAbsolutePath = process.cwd() + "/";
+  return message.replaceAll(projectAbsolutePath, "");
 }
 
 /**
