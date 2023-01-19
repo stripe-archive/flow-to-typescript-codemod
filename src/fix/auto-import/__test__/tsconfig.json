@@ -11,9 +11,9 @@
     "noImplicitAny": true,
     "noImplicitReturns": false,
     "noImplicitThis": true,
-    "lib": ["dom","dom.iterable", "esnext"],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "resolveJsonModule": true,
-    "strict": true,
+    "strict": true
   },
   "include": ["needs-imports.ts", "./export.ts"],
   "exclude": ["auto-import.test.ts"]

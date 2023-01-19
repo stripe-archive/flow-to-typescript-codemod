@@ -1,4 +1,4 @@
-import { Diagnostic, DiagnosticMessageChain } from "ts-morph";
+import { Diagnostic, DiagnosticMessageChain } from 'ts-morph'
 
 /**
  * Detect chains of errors, vs a single error
@@ -6,7 +6,7 @@ import { Diagnostic, DiagnosticMessageChain } from "ts-morph";
 function isDiagnosticMessageChain(
   message: string | DiagnosticMessageChain
 ): message is DiagnosticMessageChain {
-  return typeof message !== "string";
+  return typeof message !== 'string'
 }
 
 /**
@@ -14,18 +14,18 @@ function isDiagnosticMessageChain(
  * main error message.
  */
 function getDiagnosticMessage(diagnostic: Diagnostic): string {
-  const messageText = diagnostic.getMessageText();
+  const messageText = diagnostic.getMessageText()
   if (isDiagnosticMessageChain(messageText)) {
-    return messageText.getMessageText();
+    return messageText.getMessageText()
   }
 
-  return messageText;
+  return messageText
 }
 
 /**
  * Format a TS error diagnostic as a formatted description
  */
 export function diagnosticToDescription(diagnostic: Diagnostic): string {
-  const messageText = getDiagnosticMessage(diagnostic);
-  return `TS${diagnostic.getCode()} - ${messageText}`;
+  const messageText = getDiagnosticMessage(diagnostic)
+  return `TS${diagnostic.getCode()} - ${messageText}`
 }

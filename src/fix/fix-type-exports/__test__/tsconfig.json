@@ -11,10 +11,10 @@
     "noImplicitAny": true,
     "noImplicitReturns": false,
     "noImplicitThis": true,
-    "lib": ["dom","dom.iterable", "esnext"],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "resolveJsonModule": true,
-    "strict": true,
+    "strict": true
   },
   "include": ["*.ts"],
-  "exclude": ["*.test.ts"],
+  "exclude": ["*.test.ts"]
 }

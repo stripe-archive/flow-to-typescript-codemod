@@ -1,3 +1,3 @@
 export type ExportedType = {
-  type: "type";
-};
+  type: 'type'
+}

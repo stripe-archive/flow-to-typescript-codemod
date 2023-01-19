@@ -1,62 +1,62 @@
-import { autoSuppressErrors } from "../auto-suppress";
+import { autoSuppressErrors } from '../auto-suppress'
 import {
   createOutputRecorder,
   getTestFixState,
-} from "../../../convert/utils/testing";
+} from '../../../convert/utils/testing'
 
-jest.mock("../../../runner/migration-reporter");
-jest.mock("../../../runner/logger");
+jest.mock('../../../runner/migration-reporter')
+jest.mock('../../../runner/logger')
 
-describe("autoSuppressErrors", () => {
+describe('autoSuppressErrors', () => {
   beforeEach(() => {
-    jest.resetAllMocks();
-  });
+    jest.resetAllMocks()
+  })
 
-  it("adds suppressions to suppressable errors", async () => {
-    const [results, recordTestResult] = createOutputRecorder();
+  it('adds suppressions to suppressable errors', async () => {
+    const [results, recordTestResult] = createOutputRecorder()
 
     await autoSuppressErrors(
       getTestFixState({
         tsProps: false,
         autoSuppressErrors: false,
         generateReport: false,
-        jiraSlug: "",
+        jiraSlug: '',
         useIgnore: false,
         removeUnused: false,
-        config: "./src/fix/suppressions/__test__/tsconfig.json",
-        format: "stdout",
+        config: './src/fix/suppressions/__test__/tsconfig.json',
+        format: 'stdout',
         silent: false,
-        output: "",
+        output: '',
         autoImport: false,
         fixTypeExports: false,
       }),
       recordTestResult
-    );
+    )
 
-    expect(results["test-input.ts"]).toMatchSnapshot();
-  });
+    expect(results['test-input.ts']).toMatchSnapshot()
+  })
 
-  it("does not add if run twice", async () => {
-    const [results, recordTestResult] = createOutputRecorder();
+  it('does not add if run twice', async () => {
+    const [results, recordTestResult] = createOutputRecorder()
     const state = getTestFixState({
       tsProps: false,
       autoSuppressErrors: false,
       generateReport: false,
-      jiraSlug: "",
+      jiraSlug: '',
       useIgnore: false,
       removeUnused: false,
-      config: "./src/fix/suppressions/__test__/tsconfig.json",
-      format: "stdout",
+      config: './src/fix/suppressions/__test__/tsconfig.json',
+      format: 'stdout',
       silent: false,
-      output: "",
+      output: '',
       autoImport: false,
       fixTypeExports: false,
-    });
+    })
 
-    await autoSuppressErrors(state, recordTestResult);
+    await autoSuppressErrors(state, recordTestResult)
 
-    await autoSuppressErrors(state, recordTestResult);
+    await autoSuppressErrors(state, recordTestResult)
 
-    expect(results["test-input.ts"]).toMatchSnapshot();
-  });
-});
+    expect(results['test-input.ts']).toMatchSnapshot()
+  })
+})

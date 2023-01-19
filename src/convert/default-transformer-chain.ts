@@ -9,8 +9,8 @@ import {
   privateTypeTransformRunner,
   typeAnnotationTransformRunner,
   removeFlowCommentTransformRunner,
-} from "./transform-runners";
-import { Transformer } from "./transformer";
+} from './transform-runners'
+import { Transformer } from './transformer'
 
 /**
  * Default chain of babel transforms to run. Order will be preserved.
@@ -26,4 +26,4 @@ export const defaultTransformerChain: readonly Transformer[] = [
   jsxSpreadTransformRunner,
   importTransformRunner,
   removeFlowCommentTransformRunner,
-];
+]

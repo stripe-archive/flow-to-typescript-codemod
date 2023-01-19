@@ -6,22 +6,22 @@
  * [1]: https://github.com/facebook/flow/blob/6491b1ac744dcac82ad07f4d9ff9deb6b977275d/packages/flow-upgrade/src/findFlowFiles.js
  */
 
-import path from "path";
-import fs from "fs-extra";
-import ignore from "ignore";
-import MigrationReporter from "./migration-reporter";
+import path from 'path'
+import fs from 'fs-extra'
+import ignore from 'ignore'
+import MigrationReporter from './migration-reporter'
 
 /**
  * How many bytes we should look at for the Flow pragma.
  */
-const PRAGMA_BYTES = 5000;
+const PRAGMA_BYTES = 5000
 export enum FlowFileType {
   FLOW,
   NO_FLOW,
   NO_ANNOTATION,
 }
 
-export type FlowFileList = Array<{ filePath: string; fileType: FlowFileType }>;
+export type FlowFileList = Array<{ filePath: string; fileType: FlowFileType }>
 
 /**
  * Finds all of the Flow files in the provided directory as efficiently as
@@ -38,16 +38,16 @@ export function findFlowFilesAsync(
 ): Promise<FlowFileList> {
   return new Promise((_resolve, _reject) => {
     // Tracks whether or not we have rejected our promise.
-    let rejected = false;
+    let rejected = false
     // How many asynchronous tasks are waiting at the moment.
-    let waiting = 0;
+    let waiting = 0
     // All the valid file paths that we have found.
-    const filePaths: FlowFileList = [];
+    const filePaths: FlowFileList = []
     // Track ignored files
-    const ig = ignore().add(ignoredDirectories);
+    const ig = ignore().add(ignoredDirectories)
 
     // Begin the recursion!
-    processDirectory(rootDirectory, reporter);
+    processDirectory(rootDirectory, reporter)
 
     /**
      * Process a directory by looking at all of its entries and recursing
@@ -56,14 +56,14 @@ export function findFlowFilesAsync(
     function processDirectory(directory: string, reporter: MigrationReporter) {
       // If we were rejected then we should not continue.
       if (rejected === true) {
-        return;
+        return
       }
       // We are now waiting on this asynchronous task.
-      waiting++;
+      waiting++
       // Read the directory...
       fs.readdir(directory, (error, fileNames) => {
         if (error) {
-          return reject(error);
+          return reject(error)
         }
         // Process every file name that we got from reading the directory.
         for (let i = 0; i < fileNames.length; i++) {
@@ -72,11 +72,11 @@ export function findFlowFilesAsync(
             fileNames[i],
             reporter,
             stripPathsForIgnore
-          );
+          )
         }
         // We are done with this async task.
-        done();
-      });
+        done()
+      })
     }
 
     /**
@@ -91,43 +91,43 @@ export function findFlowFilesAsync(
     ) {
       // If we were rejected then we should not continue.
       if (rejected === true) {
-        return;
+        return
       }
       // We are now waiting on this asynchronous task.
-      waiting++;
+      waiting++
       // Get the file path for this file.
-      const filePath = path.join(directory, fileName);
+      const filePath = path.join(directory, fileName)
       // ignore doesn't handle relative paths, so strip them. This does not work in all edge cases so is behind a flag
       const correctedPath = stripPathsForIgnore
-        ? filePath.replace(/^(?:\.\.\/)+/, "")
-        : filePath;
+        ? filePath.replace(/^(?:\.\.\/)+/, '')
+        : filePath
       // ensure that path is valid so that ignore check doesn't throw
       if (ignore.isPathValid(correctedPath) && ig.ignores(correctedPath)) {
-        done();
-        return;
+        done()
+        return
       }
       // Get the stats for the file.
       fs.lstat(filePath, (error, stats) => {
         if (error) {
-          return reject(error);
+          return reject(error)
         }
         // If this is a directory...
         if (stats.isDirectory()) {
           // ...and it is not an ignored directory...
-          if (fileName !== "node_modules" && fileName !== "transpiled") {
+          if (fileName !== 'node_modules' && fileName !== 'transpiled') {
             // ...then recursively process the directory.
-            processDirectory(filePath, reporter);
+            processDirectory(filePath, reporter)
           }
         } else if (stats.isFile()) {
           // Otherwise if this is a JavaScript file...
-          if (fileName.endsWith(".js") || fileName.endsWith(".jsx")) {
+          if (fileName.endsWith('.js') || fileName.endsWith('.jsx')) {
             // Then process the file path as JavaScript.
-            processJavaScriptFilePath(filePath, stats.size, reporter);
+            processJavaScriptFilePath(filePath, stats.size, reporter)
           }
         }
         // We are done with this async task
-        done();
-      });
+        done()
+      })
     }
 
     /**
@@ -141,45 +141,45 @@ export function findFlowFilesAsync(
     ) {
       // If we were rejected then we should not continue.
       if (rejected === true) {
-        return;
+        return
       }
       // We are now waiting on this asynchronous task.
-      waiting++;
+      waiting++
       // Open the file path.
-      fs.open(filePath, "r", (error, file) => {
+      fs.open(filePath, 'r', (error, file) => {
         if (error) {
-          return reject(error);
+          return reject(error)
         }
         // Get the smaller of our pragma chars constant and the file byte size.
-        const bytes = Math.min(PRAGMA_BYTES, fileByteSize);
+        const bytes = Math.min(PRAGMA_BYTES, fileByteSize)
         // Create the buffer we will read to.
-        const buffer = Buffer.alloc(bytes);
+        const buffer = Buffer.alloc(bytes)
         // Read a set number of bytes from the file.
         fs.read(file, buffer, 0, bytes, 0, (error) => {
           if (error) {
-            return reject(error);
+            return reject(error)
           }
           // If the buffer has the @flow pragma then add the file path to our
           // final file paths array.
-          if (buffer.includes("@flow")) {
-            filePaths.push({ filePath, fileType: FlowFileType.FLOW });
-          } else if (buffer.includes("@noflow")) {
-            filePaths.push({ filePath, fileType: FlowFileType.NO_FLOW });
-            reporter.foundNoFlowAnnotation(filePath);
+          if (buffer.includes('@flow')) {
+            filePaths.push({ filePath, fileType: FlowFileType.FLOW })
+          } else if (buffer.includes('@noflow')) {
+            filePaths.push({ filePath, fileType: FlowFileType.NO_FLOW })
+            reporter.foundNoFlowAnnotation(filePath)
           } else {
-            filePaths.push({ filePath, fileType: FlowFileType.NO_ANNOTATION });
-            reporter.foundNonFlowfile(filePath);
+            filePaths.push({ filePath, fileType: FlowFileType.NO_ANNOTATION })
+            reporter.foundNonFlowfile(filePath)
           }
           // Close the file.
           fs.close(file, (error) => {
             if (error) {
-              return reject(error);
+              return reject(error)
             }
             // We are done with this async task
-            done();
-          });
-        });
-      });
+            done()
+          })
+        })
+      })
     }
 
     /**
@@ -189,16 +189,16 @@ export function findFlowFilesAsync(
     function done() {
       // We don't care if we were rejected.
       if (rejected === true) {
-        return;
+        return
       }
       // Decrement the number of async tasks we are waiting on.
-      waiting--;
+      waiting--
       // If we are finished waiting then we want to resolve our promise.
       if (waiting <= 0) {
         if (waiting === 0) {
-          _resolve(filePaths);
+          _resolve(filePaths)
         } else {
-          reject(new Error(`Expected a positive number: ${waiting}`));
+          reject(new Error(`Expected a positive number: ${waiting}`))
         }
       }
     }
@@ -207,8 +207,8 @@ export function findFlowFilesAsync(
      * Our implementation of reject that also sets `rejected` to false.
      */
     function reject(error: unknown) {
-      rejected = true;
-      _reject(error);
+      rejected = true
+      _reject(error)
     }
-  });
+  })
 }

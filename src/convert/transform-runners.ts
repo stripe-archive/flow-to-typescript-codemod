@@ -1,61 +1,61 @@
-import { hasJSX } from "./utils/common";
-import { addImports } from "./add-imports";
-import { addWatermark } from "./add-watermark";
-import { transformJSX } from "./jsx";
-import { transformDeclarations } from "./declarations";
-import { transformExpressions } from "./expressions";
-import { transformJsxSpread } from "./jsx-spread/jsx-spread";
-import { transformPatterns } from "./patterns";
-import { transformPrivateTypes } from "./private-types";
-import { TransformerInput, Transformer } from "./transformer";
-import { transformTypeAnnotations } from "./type-annotations";
-import { removeFlowComments } from "./remove-flow-comments";
-import { annotateNoFlow } from "./annotate-no-flow";
+import { hasJSX } from './utils/common'
+import { addImports } from './add-imports'
+import { addWatermark } from './add-watermark'
+import { transformJSX } from './jsx'
+import { transformDeclarations } from './declarations'
+import { transformExpressions } from './expressions'
+import { transformJsxSpread } from './jsx-spread/jsx-spread'
+import { transformPatterns } from './patterns'
+import { transformPrivateTypes } from './private-types'
+import { TransformerInput, Transformer } from './transformer'
+import { transformTypeAnnotations } from './type-annotations'
+import { removeFlowComments } from './remove-flow-comments'
+import { annotateNoFlow } from './annotate-no-flow'
 
 const standardTransformRunnerFactory = (transformer: Transformer) => {
   return (transformerInput: TransformerInput) => {
-    return transformer(transformerInput);
-  };
-};
+    return transformer(transformerInput)
+  }
+}
 
 export const hasJsxTransformRunner: Transformer<void> = (
   transformerInput: TransformerInput
 ) => {
-  transformerInput.state.hasJsx = hasJSX(transformerInput);
-};
+  transformerInput.state.hasJsx = hasJSX(transformerInput)
+}
 
 export const privateTypeTransformRunner: Transformer =
-  standardTransformRunnerFactory(transformPrivateTypes);
+  standardTransformRunnerFactory(transformPrivateTypes)
 
 export const expressionTransformRunner: Transformer =
-  standardTransformRunnerFactory(transformExpressions);
+  standardTransformRunnerFactory(transformExpressions)
 
 export const jsxTransformRunner: Transformer =
-  standardTransformRunnerFactory(transformJSX);
+  standardTransformRunnerFactory(transformJSX)
 
 export const declarationsTransformRunner: Transformer = async (
   transformerInput: TransformerInput
 ) => {
-  await transformDeclarations(transformerInput);
-};
+  await transformDeclarations(transformerInput)
+}
 
 export const typeAnnotationTransformRunner: Transformer =
-  standardTransformRunnerFactory(transformTypeAnnotations);
+  standardTransformRunnerFactory(transformTypeAnnotations)
 
 export const patternTransformRunner: Transformer =
-  standardTransformRunnerFactory(transformPatterns);
+  standardTransformRunnerFactory(transformPatterns)
 
 export const importTransformRunner: Transformer =
-  standardTransformRunnerFactory(addImports);
+  standardTransformRunnerFactory(addImports)
 
 export const watermarkTransformRunner: Transformer =
-  standardTransformRunnerFactory(addWatermark);
+  standardTransformRunnerFactory(addWatermark)
 
 export const jsxSpreadTransformRunner: Transformer =
-  standardTransformRunnerFactory(transformJsxSpread);
+  standardTransformRunnerFactory(transformJsxSpread)
 
 export const removeFlowCommentTransformRunner: Transformer =
-  standardTransformRunnerFactory(removeFlowComments);
+  standardTransformRunnerFactory(removeFlowComments)
 
 export const annotateNoFlowTransformRunner: Transformer =
-  standardTransformRunnerFactory(annotateNoFlow);
+  standardTransformRunnerFactory(annotateNoFlow)

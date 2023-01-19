@@ -1,8 +1,8 @@
-import * as t from "@babel/types";
-import MigrationReporter from "../../runner/migration-reporter";
-import { State } from "../../runner/state";
-import { buildTSIdentifier, inheritLocAndComments } from "../utils/common";
-import { migrateType } from "./type";
+import * as t from '@babel/types'
+import MigrationReporter from '../../runner/migration-reporter'
+import { State } from '../../runner/state'
+import { buildTSIdentifier, inheritLocAndComments } from '../utils/common'
+import { migrateType } from './type'
 
 /**
  * Scan through function parameters and convert them
@@ -16,9 +16,9 @@ export function migrateFunctionParameters(
   function isOptional(param: t.FunctionTypeParam) {
     return (
       param.optional ||
-      param.typeAnnotation.type === "NullableTypeAnnotation" ||
-      param.typeAnnotation.type === "AnyTypeAnnotation"
-    );
+      param.typeAnnotation.type === 'NullableTypeAnnotation' ||
+      param.typeAnnotation.type === 'AnyTypeAnnotation'
+    )
   }
   const params = flowType.params.map<t.Identifier | t.RestElement>(
     (flowParam, i) => {
@@ -34,25 +34,25 @@ export function migrateFunctionParameters(
         t.tsTypeAnnotation(
           migrateType(reporter, state, flowParam.typeAnnotation)
         )
-      );
-      inheritLocAndComments(flowParam, tsParam);
-      return tsParam;
+      )
+      inheritLocAndComments(flowParam, tsParam)
+      return tsParam
     }
-  );
+  )
   if (flowType.rest) {
     // If a Flow rest element doesn’t have a name we call it `rest`.
     const tsRestParam = t.restElement(
-      flowType.rest.name || t.identifier("rest")
-    );
+      flowType.rest.name || t.identifier('rest')
+    )
     tsRestParam.typeAnnotation = t.tsTypeAnnotation(
       migrateType(reporter, state, flowType.rest.typeAnnotation)
-    );
-    inheritLocAndComments(flowType.rest, tsRestParam);
-    params.push(tsRestParam);
+    )
+    inheritLocAndComments(flowType.rest, tsRestParam)
+    params.push(tsRestParam)
 
     // Technically, Flow rest parameters can be optional (`(...rest?: T[]) => void`),
     // but what does that even mean? We choose to ignore that.
   }
 
-  return params;
+  return params
 }

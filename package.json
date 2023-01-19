@@ -17,11 +17,11 @@
   ],
   "scripts": {
     "build": "./esBuild.js",
-    "dev": "yarn build && node ./dist/index.js",
-    "typescriptify": "yarn build && node ./dist/index.js",
+    "dev": "pnpm build && node ./dist/index.js",
+    "typescriptify": "pnpm build && node ./dist/index.js",
     "lint": "eslint --ext ts src",
-    "prepare": "yarn patch-package",
-    "prettier": "prettier --write 'src/**/*.{js,jsx,mdx,ts,tsx}' !src/test/test_files/*.{js,jsx,ts,tsx}",
+    "prepare": "pnpm patch-package",
+    "prettier": "prettier --no-semi --single-quote --write 'src/**/*.{js,jsx,mdx,ts,tsx}' !src/test/test_files/*.{js,jsx,ts,tsx}",
     "test": "jest",
     "types": "tsc -b ."
   },
@@ -64,13 +64,12 @@
     "jest": "^26.0.0",
     "jest-junit": "^12.0.0",
     "patch-package": "^6.4.7",
-    "prettier": "^2.4.1",
+    "prettier": "^2.8.3",
     "recast": "^0.20.4",
     "signale": "^1.4.0",
     "ts-jest": "^26.0.0",
     "ts-morph": "^13.0.2",
     "typescript": "4.5.2",
     "yargs": "^17.2.1"
-  },
-  "dependencies": {}
+  }
 }

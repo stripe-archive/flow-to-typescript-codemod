@@ -1,4 +1,4 @@
-import MigrationReporter, { MigrationReport } from "./migration-reporter";
+import MigrationReporter, { MigrationReport } from './migration-reporter'
 
-export default MigrationReporter;
-export type { MigrationReport };
+export default MigrationReporter
+export type { MigrationReport }

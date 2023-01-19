@@ -1,7 +1,7 @@
-import * as t from "@babel/types";
-import traverse from "@babel/traverse";
-import { replaceWith } from "./utils/common";
-import { TransformerInput } from "./transformer";
+import * as t from '@babel/types'
+import traverse from '@babel/traverse'
+import { replaceWith } from './utils/common'
+import { TransformerInput } from './transformer'
 
 /**
  * Flow commonly uses `$` to denote private type members like React$Node.
@@ -14,14 +14,14 @@ export function transformPrivateTypes({
 }: TransformerInput) {
   traverse(file, {
     Identifier(path) {
-      const id = path.node;
+      const id = path.node
       const hasPrivateType =
-        /\w\$\w/.test(id.name) && !state.config.keepPrivateTypes;
-      const privateReactType = id.name.startsWith("React$");
-      const privateFlowType = id.name.startsWith("$FlowFixMe");
-      const isTypeAnnotation = path.parentPath.type === "GenericTypeAnnotation";
+        /\w\$\w/.test(id.name) && !state.config.keepPrivateTypes
+      const privateReactType = id.name.startsWith('React$')
+      const privateFlowType = id.name.startsWith('$FlowFixMe')
+      const isTypeAnnotation = path.parentPath.type === 'GenericTypeAnnotation'
       if ((hasPrivateType || privateReactType) && isTypeAnnotation) {
-        const [qualification, name] = id.name.split("$");
+        const [qualification, name] = id.name.split('$')
         replaceWith(
           path,
           t.qualifiedTypeIdentifier(
@@ -30,11 +30,11 @@ export function transformPrivateTypes({
           ),
           state.config.filePath,
           reporter
-        );
+        )
       } else if (privateFlowType && isTypeAnnotation) {
         // Using t.tsAnyKeyword() here eventually collides w/ another transformer that makes this "unknown"
-        replaceWith(path, t.identifier("any"), state.config.filePath, reporter);
+        replaceWith(path, t.identifier('any'), state.config.filePath, reporter)
       }
     },
-  });
+  })
 }

@@ -1,7 +1,7 @@
-import * as t from "@babel/types";
+import * as t from '@babel/types'
 
 export function isIdentifierNamed(name: string) {
-  return (node: t.TSEntityName) => t.isIdentifier(node) && node.name === name;
+  return (node: t.TSEntityName) => t.isIdentifier(node) && node.name === name
 }
 
 /**
@@ -10,10 +10,10 @@ export function isIdentifierNamed(name: string) {
  * @param rightName - Right side of the type
  */
 export function matchesFullyQualifiedName(leftName: string, rightName: string) {
-  const leftMatcher = isIdentifierNamed(leftName);
-  const rightMatcher = isIdentifierNamed(rightName);
+  const leftMatcher = isIdentifierNamed(leftName)
+  const rightMatcher = isIdentifierNamed(rightName)
   return (node: t.Identifier | t.TSQualifiedName) =>
     t.isTSQualifiedName(node) &&
     leftMatcher(node.left) &&
-    rightMatcher(node.right);
+    rightMatcher(node.right)
 }

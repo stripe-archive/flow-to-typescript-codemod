@@ -1,1 +1,1 @@
-export { defaultTsConfig } from "./ts-config";
+export { defaultTsConfig } from './ts-config'

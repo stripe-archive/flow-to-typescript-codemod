@@ -1,16 +1,16 @@
-import * as t from "@babel/types";
-import traverse, { NodePath } from "@babel/traverse";
+import * as t from '@babel/types'
+import traverse, { NodePath } from '@babel/traverse'
 import {
   replaceWith,
   isInsideCreateReactClass,
   isComplexLiteral,
   JEST_MOCK_METHODS,
-} from "./utils/common";
-import { migrateType } from "./migrate/type";
-import { migrateTypeParameterInstantiation } from "./migrate/type-parameter";
-import { TransformerInput } from "./transformer";
-import MigrationReporter from "../runner/migration-reporter";
-import { State } from "../runner/state";
+} from './utils/common'
+import { migrateType } from './migrate/type'
+import { migrateTypeParameterInstantiation } from './migrate/type-parameter'
+import { TransformerInput } from './transformer'
+import MigrationReporter from '../runner/migration-reporter'
+import { State } from '../runner/state'
 
 /**
  * Transform expression nodes and type assertions
@@ -27,23 +27,23 @@ export function transformExpressions({
         // `((x: Object): T)` → `(x as T)`
         // `((x: Function): T)` → `(x as T)`
 
-        path.node.expression.type === "TypeCastExpression" &&
+        path.node.expression.type === 'TypeCastExpression' &&
         (path.node.expression.typeAnnotation.typeAnnotation.type ===
-          "AnyTypeAnnotation" ||
+          'AnyTypeAnnotation' ||
           (path.node.expression.typeAnnotation.typeAnnotation.type ===
-            "GenericTypeAnnotation" &&
+            'GenericTypeAnnotation' &&
             path.node.expression.typeAnnotation.typeAnnotation.typeParameters &&
             path.node.expression.typeAnnotation.typeAnnotation.id.type ===
-              "Identifier" &&
+              'Identifier' &&
             (path.node.expression.typeAnnotation.typeAnnotation.id.name ===
-              "Object" ||
+              'Object' ||
               path.node.expression.typeAnnotation.typeAnnotation.id.name ===
-                "Function")))
+                'Function')))
       ) {
         // If we are a `createReactClass()` instance property then transform
         // into `((x as any) as T)`.
         if (
-          path.parent.type === "ObjectProperty" &&
+          path.parent.type === 'ObjectProperty' &&
           isInsideCreateReactClass(path)
         ) {
           replaceWith(
@@ -67,7 +67,7 @@ export function transformExpressions({
             ),
             state.config.filePath,
             reporter
-          );
+          )
         } else {
           replaceWith(
             path,
@@ -81,12 +81,12 @@ export function transformExpressions({
             ),
             state.config.filePath,
             reporter
-          );
+          )
         }
       } else if (
         // `(x: any)` → `(x as any)`
 
-        path.node.typeAnnotation.typeAnnotation.type === "AnyTypeAnnotation"
+        path.node.typeAnnotation.typeAnnotation.type === 'AnyTypeAnnotation'
       ) {
         replaceWith(
           path,
@@ -100,19 +100,19 @@ export function transformExpressions({
           ),
           state.config.filePath,
           reporter
-        );
+        )
       } else if (
         // `('foo': 'foo')` → `('foo' as const)`
         // `(42: 42)` → `(42 as const)`
 
-        (path.node.expression.type === "StringLiteral" &&
+        (path.node.expression.type === 'StringLiteral' &&
           path.node.typeAnnotation.typeAnnotation.type ===
-            "StringLiteralTypeAnnotation" &&
+            'StringLiteralTypeAnnotation' &&
           path.node.expression.value ===
             path.node.typeAnnotation.typeAnnotation.value) ||
-        (path.node.expression.type === "NumericLiteral" &&
+        (path.node.expression.type === 'NumericLiteral' &&
           path.node.typeAnnotation.typeAnnotation.type ===
-            "NumberLiteralTypeAnnotation" &&
+            'NumberLiteralTypeAnnotation' &&
           path.node.expression.value ===
             path.node.typeAnnotation.typeAnnotation.value)
       ) {
@@ -120,11 +120,11 @@ export function transformExpressions({
           path,
           t.tsAsExpression(
             path.node.expression,
-            t.tsTypeReference(t.identifier("const"))
+            t.tsTypeReference(t.identifier('const'))
           ),
           state.config.filePath,
           reporter
-        );
+        )
       } else if (isComplexLiteral(path.node.expression)) {
         // `(x: T)` → `(x as T)`
         //
@@ -142,7 +142,7 @@ export function transformExpressions({
           ),
           state.config.filePath,
           reporter
-        );
+        )
       } else {
         // If you want to see all type casts which aren’t handled by the above:
         //
@@ -165,7 +165,7 @@ export function transformExpressions({
           ),
           state.config.filePath,
           reporter
-        );
+        )
       }
     },
     ArrowFunctionExpression(path) {
@@ -175,23 +175,23 @@ export function transformExpressions({
       if (
         (state.hasJsx || state.config.forceTSX) &&
         path.node.typeParameters &&
-        path.node.typeParameters.type === "TypeParameterDeclaration" &&
+        path.node.typeParameters.type === 'TypeParameterDeclaration' &&
         path.node.typeParameters.params
       ) {
         for (let i = 0; i < path.node.typeParameters.params.length; ++i) {
           if (!path.node.typeParameters.params[i].bound) {
-            path.node.typeParameters.params[i].name += " extends unknown";
+            path.node.typeParameters.params[i].name += ' extends unknown'
           }
         }
       }
     },
     CallExpression(path) {
-      migrateArgumentsToParameters(path, reporter, state);
+      migrateArgumentsToParameters(path, reporter, state)
 
       if (
         t.isMemberExpression(path.node.callee) &&
         t.isIdentifier(path.node.callee.property) &&
-        path.node.callee.property.name === "reduce"
+        path.node.callee.property.name === 'reduce'
       ) {
         // x.reduce(fn, []) → x.reduce<Array<any>>(fn, []);
         // if the reduce is not typed and the last argument is not a type assertion
@@ -200,7 +200,7 @@ export function transformExpressions({
           path.node.arguments.length === 2 &&
           !t.isTypeCastExpression(path.node.arguments[1])
         ) {
-          reporter.untypedReduce(state.config.filePath, path.node.loc!);
+          reporter.untypedReduce(state.config.filePath, path.node.loc!)
           // if the last argument is an array literal, we can infer the type
           if (
             t.isArrayExpression(path.node.arguments[1]) &&
@@ -208,23 +208,23 @@ export function transformExpressions({
           ) {
             path.node.typeParameters = t.tsTypeParameterInstantiation([
               t.tsTypeReference(
-                t.identifier("Array"),
+                t.identifier('Array'),
                 t.tsTypeParameterInstantiation([t.tsAnyKeyword()])
               ),
-            ]);
+            ])
           } else if (
             t.isObjectExpression(path.node.arguments[1]) &&
             path.node.arguments[1].properties.length === 0
           ) {
             path.node.typeParameters = t.tsTypeParameterInstantiation([
               t.tsTypeReference(
-                t.identifier("Record"),
+                t.identifier('Record'),
                 t.tsTypeParameterInstantiation([
                   t.tsStringKeyword(),
                   t.tsAnyKeyword(),
                 ])
               ),
-            ]);
+            ])
           }
         }
       } else if (
@@ -232,31 +232,31 @@ export function transformExpressions({
         t.isIdentifier(path.node.callee.property) &&
         JEST_MOCK_METHODS.includes(path.node.callee.property.name) &&
         t.isIdentifier(path.node.callee.object) &&
-        path.node.callee.object.name === "jest"
+        path.node.callee.object.name === 'jest'
       ) {
         // remove the extension from jest.mock calls:
         // jest.mock('path/to/file.js') -> jest.mock('path/to/file')
-        const firstArgument = path.node.arguments[0];
+        const firstArgument = path.node.arguments[0]
         if (t.isStringLiteral(firstArgument)) {
-          firstArgument.value = firstArgument.value.replace(/\.jsx?$/, "");
+          firstArgument.value = firstArgument.value.replace(/\.jsx?$/, '')
         }
       }
     },
     NewExpression(path) {
-      migrateArgumentsToParameters(path, reporter, state);
+      migrateArgumentsToParameters(path, reporter, state)
     },
     // return class extends React.Component<{}>
     ClassExpression(path) {
-      const { node } = path;
+      const { node } = path
       if (node.superClass && node.superTypeParameters) {
         node.superTypeParameters = migrateTypeParameterInstantiation(
           reporter,
           state,
           node.superTypeParameters as t.TypeParameterInstantiation
-        );
+        )
       }
     },
-  });
+  })
 }
 
 function migrateArgumentsToParameters(
@@ -265,13 +265,13 @@ function migrateArgumentsToParameters(
   state: State
 ) {
   if (path.node && path.node.typeArguments) {
-    const newCall = path.node;
+    const newCall = path.node
     newCall.typeParameters = migrateTypeParameterInstantiation(
       reporter,
       state,
       path.node.typeArguments
-    );
-    newCall.typeArguments = null;
-    replaceWith(path, newCall, state.config.filePath, reporter);
+    )
+    newCall.typeArguments = null
+    replaceWith(path, newCall, state.config.filePath, reporter)
   }
 }

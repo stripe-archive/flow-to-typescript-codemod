@@ -1,46 +1,46 @@
-import { ts } from "ts-morph";
-import MigrationReporter from "../../runner/migration-reporter";
-import { stdOutFormatter } from "../../runner/migration-reporter/formatters/std-out-formatter";
-import { buildDiagnosticFilter } from "../build-diagnostic-message-filter";
-import { getImportNamed } from "../get-import-named";
-import { getParentUntil } from "../ts-node-traversal";
-import { jsonFormatter } from "../../runner/migration-reporter/formatters/json-formatter";
-import { logger } from "../../runner/logger";
-import { FixCommandState, getDiagnostics } from "../state";
+import { ts } from 'ts-morph'
+import MigrationReporter from '../../runner/migration-reporter'
+import { stdOutFormatter } from '../../runner/migration-reporter/formatters/std-out-formatter'
+import { buildDiagnosticFilter } from '../build-diagnostic-message-filter'
+import { getImportNamed } from '../get-import-named'
+import { getParentUntil } from '../ts-node-traversal'
+import { jsonFormatter } from '../../runner/migration-reporter/formatters/json-formatter'
+import { logger } from '../../runner/logger'
+import { FixCommandState, getDiagnostics } from '../state'
 
 export async function componentPropChecks({
   argv,
   migrationReporter,
   project,
 }: FixCommandState) {
-  logger.info("Checking Component Props");
+  logger.info('Checking Component Props')
 
-  const diagnostics = getDiagnostics(project);
-  const TARGETED_ERROR_MESSAGE = "does not exist";
-  const diagnosticFilter = buildDiagnosticFilter(TARGETED_ERROR_MESSAGE);
+  const diagnostics = getDiagnostics(project)
+  const TARGETED_ERROR_MESSAGE = 'does not exist'
+  const diagnosticFilter = buildDiagnosticFilter(TARGETED_ERROR_MESSAGE)
 
   diagnostics.filter(diagnosticFilter).forEach((error) => {
-    const sourceFile = error.getSourceFile();
-    const myStart = error.getStart();
+    const sourceFile = error.getSourceFile()
+    const myStart = error.getStart()
 
     if (!sourceFile || !myStart) {
-      return;
+      return
     }
 
-    const descendant = sourceFile.getDescendantAtPos(myStart);
+    const descendant = sourceFile.getDescendantAtPos(myStart)
 
-    const attribute = getParentUntil(descendant, ts.isJsxAttribute);
+    const attribute = getParentUntil(descendant, ts.isJsxAttribute)
     if (!attribute) {
-      return;
+      return
     }
-    const attributeName = String(attribute.compilerNode.name.escapedText);
+    const attributeName = String(attribute.compilerNode.name.escapedText)
 
-    const component = getParentUntil(attribute, ts.isJsxOpeningElement);
+    const component = getParentUntil(attribute, ts.isJsxOpeningElement)
     if (!component) {
-      return;
+      return
     }
 
-    const tagName = component.compilerNode.tagName.getFullText();
+    const tagName = component.compilerNode.tagName.getFullText()
 
     if (tagName.charAt(0) === tagName.charAt(0).toLowerCase()) {
       migrationReporter.invalidHTMLProp(
@@ -48,21 +48,21 @@ export async function componentPropChecks({
         error.getLineNumber() ?? 0,
         tagName,
         attributeName
-      );
-      return;
+      )
+      return
     }
 
-    const theImport = getImportNamed(sourceFile, tagName);
+    const theImport = getImportNamed(sourceFile, tagName)
 
     if (!theImport) {
-      return;
+      return
     }
 
-    const importSourceFile = theImport.getModuleSpecifierSourceFile();
+    const importSourceFile = theImport.getModuleSpecifierSourceFile()
 
     if (!importSourceFile) {
-      logger.warn("Import source file not found for import");
-      return;
+      logger.warn('Import source file not found for import')
+      return
     }
 
     if (importSourceFile.isInNodeModules()) {
@@ -72,7 +72,7 @@ export async function componentPropChecks({
         importSourceFile.getDirectoryPath(),
         tagName,
         attributeName
-      );
+      )
     } else {
       migrationReporter.invalidAppProp(
         sourceFile.getFilePath(),
@@ -80,14 +80,14 @@ export async function componentPropChecks({
         importSourceFile?.getFilePath(),
         tagName,
         attributeName
-      );
+      )
     }
-  });
+  })
 
   const formatter =
-    argv.format === "json" ? jsonFormatter(argv.output) : stdOutFormatter;
+    argv.format === 'json' ? jsonFormatter(argv.output) : stdOutFormatter
   await MigrationReporter.logReport(
     migrationReporter.generateReport(),
     formatter
-  );
+  )
 }

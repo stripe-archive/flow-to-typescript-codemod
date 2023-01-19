@@ -1,6 +1,6 @@
-import * as t from "@babel/types";
-import traverse from "@babel/traverse";
-import { TransformerInput } from "./transformer";
+import * as t from '@babel/types'
+import traverse from '@babel/traverse'
+import { TransformerInput } from './transformer'
 
 /**
  * If any of the transforms used a utility type, we need to import them
@@ -13,12 +13,12 @@ export function addImports({ state, file }: TransformerInput) {
       exit(path) {
         if (state.usedUtils) {
           const importDeclaration = t.importDeclaration(
-            [t.importSpecifier(t.identifier("Flow"), t.identifier("Flow"))],
-            t.stringLiteral("flow-to-typescript-codemod")
-          );
-          path.node.body = [importDeclaration, ...path.node.body];
+            [t.importSpecifier(t.identifier('Flow'), t.identifier('Flow'))],
+            t.stringLiteral('flow-to-typescript-codemod')
+          )
+          path.node.body = [importDeclaration, ...path.node.body]
         }
       },
     },
-  });
+  })
 }

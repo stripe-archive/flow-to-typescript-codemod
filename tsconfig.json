@@ -11,20 +11,17 @@
     "noImplicitAny": true,
     "noImplicitReturns": false,
     "noImplicitThis": true,
-    "lib": ["dom","dom.iterable", "esnext"],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "resolveJsonModule": true,
     "strict": true,
     "rootDir": "./src",
-    "types": [
-      "jest",
-      "node"
-    ],
+    "types": ["jest", "node"],
     "outDir": "./dist",
     "target": "es2019",
     "module": "commonjs",
     "alwaysStrict": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedParameters": true
   },
   "include": ["src/**/*"],
   "exclude": [
@@ -34,5 +31,5 @@
     "src/fix/auto-import/__test__/needs-imports.ts",
     "src/fix/fix-type-exports/__test__/test-input.ts",
     "src/fix/suppressions/__test__/test-input.ts"
-  ],
+  ]
 }

@@ -1,26 +1,26 @@
-import * as t from "@babel/types";
-import traverse, { NodePath, Scope } from "@babel/traverse";
-import { types } from "recast";
-import { TransformerInput } from "../transformer";
-import MigrationReporter from "../../runner/migration-reporter";
-import { logger } from "../../runner/logger";
+import * as t from '@babel/types'
+import traverse, { NodePath, Scope } from '@babel/traverse'
+import { types } from 'recast'
+import { TransformerInput } from '../transformer'
+import MigrationReporter from '../../runner/migration-reporter'
+import { logger } from '../../runner/logger'
 
 /**
  * Determine whether the file contains any JSX
  * @param file : File source to check
  */
 export function hasJSX({ file }: TransformerInput): boolean {
-  let found = false;
+  let found = false
   traverse(file, {
     JSXElement() {
-      found = true;
+      found = true
     },
     JSXFragment() {
-      found = true;
+      found = true
     },
-  });
+  })
 
-  return found;
+  return found
 }
 
 /**
@@ -32,21 +32,21 @@ export function hasNullReturn(
   scope: Scope | undefined,
   parentPath: NodePath<t.Node> | null | undefined
 ): boolean {
-  let found = false;
+  let found = false
   traverse(
     body,
     {
       ReturnStatement(path) {
-        if (path.node.argument?.type === "NullLiteral") {
-          found = true;
+        if (path.node.argument?.type === 'NullLiteral') {
+          found = true
         }
       },
     },
     scope,
     parentPath
-  );
+  )
 
-  return found;
+  return found
 }
 
 /**
@@ -54,20 +54,20 @@ export function hasNullReturn(
  * @param file : File source to check
  */
 export function hasDeclaration(file: t.File): boolean {
-  let found = false;
+  let found = false
   traverse(file, {
     DeclareModule() {
-      found = true;
+      found = true
     },
     DeclareExportDeclaration() {
-      found = true;
+      found = true
     },
     DeclareClass() {
-      found = true;
+      found = true
     },
-  });
+  })
 
-  return found;
+  return found
 }
 
 /**
@@ -82,10 +82,10 @@ export function buildTSIdentifier(
   optional?: boolean | null,
   typeAnnotation?: t.TSTypeAnnotation | null
 ): t.Identifier {
-  const identifier = t.identifier(name);
-  if (optional != null) identifier.optional = optional;
-  if (typeAnnotation != null) identifier.typeAnnotation = typeAnnotation;
-  return identifier;
+  const identifier = t.identifier(name)
+  if (optional != null) identifier.optional = optional
+  if (typeAnnotation != null) identifier.typeAnnotation = typeAnnotation
+  return identifier
 }
 
 /**
@@ -93,53 +93,53 @@ export function buildTSIdentifier(
  */
 export function isComplexLiteral(expression: t.Expression): boolean {
   if (t.isLiteral(expression)) {
-    return true;
+    return true
   }
-  if (expression.type === "Identifier" && expression.name === "undefined") {
-    return true;
+  if (expression.type === 'Identifier' && expression.name === 'undefined') {
+    return true
   }
 
-  if (expression.type === "ArrayExpression") {
+  if (expression.type === 'ArrayExpression') {
     for (const element of expression.elements) {
       if (element === null) {
-        continue;
+        continue
       }
-      if (element.type === "SpreadElement") {
+      if (element.type === 'SpreadElement') {
         if (!isComplexLiteral(element.argument)) {
-          return false;
+          return false
         } else {
-          continue;
+          continue
         }
       }
       if (!isComplexLiteral(element)) {
-        return false;
+        return false
       }
     }
-    return true;
+    return true
   }
 
-  if (expression.type === "ObjectExpression") {
+  if (expression.type === 'ObjectExpression') {
     for (const property of expression.properties) {
-      if (property.type === "ObjectMethod") {
-        return false;
-      } else if (property.type === "SpreadElement") {
-        return false;
+      if (property.type === 'ObjectMethod') {
+        return false
+      } else if (property.type === 'SpreadElement') {
+        return false
       } else {
         if (property.computed && !isComplexLiteral(property.key)) {
-          return false;
+          return false
         }
         if (
           t.isExpression(property.value) &&
           !isComplexLiteral(property.value)
         ) {
-          return false;
+          return false
         }
       }
     }
-    return true;
+    return true
   }
 
-  return false;
+  return false
 }
 
 /**
@@ -147,31 +147,31 @@ export function isComplexLiteral(expression: t.Expression): boolean {
  */
 export function isInsideCreateReactClass(path: NodePath<t.Node>): boolean {
   if (
-    path.node.type === "CallExpression" &&
-    path.node.callee.type === "Identifier" &&
-    path.node.callee.name === "createReactClass"
+    path.node.type === 'CallExpression' &&
+    path.node.callee.type === 'Identifier' &&
+    path.node.callee.name === 'createReactClass'
   ) {
-    return true;
+    return true
   }
 
   if (path.parentPath) {
-    return isInsideCreateReactClass(path.parentPath);
+    return isInsideCreateReactClass(path.parentPath)
   }
 
-  return false;
+  return false
 }
 
 /**
  * Copies the location and comments of one node to a new node.
  */
 export function inheritLocAndComments(oldNode: t.Node, newNode: t.Node) {
-  newNode.loc = oldNode.loc;
+  newNode.loc = oldNode.loc
 
   // Recast uses a different format for comments then Babel.
-  if ("comments" in oldNode) {
+  if ('comments' in oldNode) {
     // @ts-expect-error comments doesn't exist on babel type
-    newNode.comments = oldNode.comments;
-    delete oldNode.comments;
+    newNode.comments = oldNode.comments
+    delete oldNode.comments
   }
 }
 
@@ -180,15 +180,15 @@ export function addCommentsAtHeadOfNode(
   comments: (types.namedTypes.CommentBlock | types.namedTypes.CommentLine)[]
 ) {
   if (rootNode !== undefined) {
-    rootNode.comments = rootNode.comments || [];
-    rootNode.comments.unshift(...comments);
+    rootNode.comments = rootNode.comments || []
+    rootNode.comments.unshift(...comments)
   } else {
-    logger.warn(`Cannot add comments ${comments} to empty node!`);
+    logger.warn(`Cannot add comments ${comments} to empty node!`)
   }
 }
 
 export function addEmptyLineInProgramPath(path: NodePath<t.Program>) {
-  path.unshiftContainer("body", t.noop());
+  path.unshiftContainer('body', t.noop())
 }
 
 /**
@@ -203,12 +203,12 @@ export function replaceWith(
   filePath: string,
   reporter: MigrationReporter
 ) {
-  inheritLocAndComments(path.node, node);
+  inheritLocAndComments(path.node, node)
   try {
-    path.replaceWith(node);
+    path.replaceWith(node)
   } catch (e) {
     // Catch the error so conversion of the file can continue.
-    reporter.error(filePath, e);
+    reporter.error(filePath, e)
   }
 }
 
@@ -230,23 +230,23 @@ export function getLoc<TNodeType extends t.Node>(
         column: 0,
       },
     }
-  );
+  )
 }
 
 export const GlobalTypes = {
-  TimeoutID: "number",
-  IntervalID: "number",
-  ImmediateID: "number",
-  immediateID: "number",
-  AnimationFrameID: "number",
-  RequestOptions: "RequestInit",
-} as const;
+  TimeoutID: 'number',
+  IntervalID: 'number',
+  ImmediateID: 'number',
+  immediateID: 'number',
+  AnimationFrameID: 'number',
+  RequestOptions: 'RequestInit',
+} as const
 
 export const LiteralTypes = {
-  String: "string",
-  Number: "number",
-  Boolean: "boolean",
-  Symbol: "symbol",
-} as const;
+  String: 'string',
+  Number: 'number',
+  Boolean: 'boolean',
+  Symbol: 'symbol',
+} as const
 
-export const JEST_MOCK_METHODS = ["mock", "requireActual"];
+export const JEST_MOCK_METHODS = ['mock', 'requireActual']

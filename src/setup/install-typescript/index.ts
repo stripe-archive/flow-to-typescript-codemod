@@ -1,1 +1,1 @@
-export { installTypescript } from "./install-typescript";
+export { installTypescript } from './install-typescript'

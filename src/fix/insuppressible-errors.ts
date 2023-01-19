@@ -1,4 +1,4 @@
-import { Diagnostic, ts } from "ts-morph";
+import { Diagnostic, ts } from 'ts-morph'
 
 /**
  * This is NOT an exhaustive list. But rather a list of errors that we found
@@ -8,10 +8,10 @@ import { Diagnostic, ts } from "ts-morph";
  */
 export const insuppressibleErrors = new Set([
   1383, 2304, 2306, 2503, 2578, 4025, 6059, 6307,
-]);
+])
 
 export function isDiagnosticSuppressible(
   diagnostic: Diagnostic<ts.Diagnostic>
 ): boolean {
-  return !insuppressibleErrors.has(diagnostic.getCode());
+  return !insuppressibleErrors.has(diagnostic.getCode())
 }

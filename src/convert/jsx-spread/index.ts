@@ -1,1 +1,1 @@
-export { transformJsxSpread } from "./jsx-spread";
+export { transformJsxSpread } from './jsx-spread'

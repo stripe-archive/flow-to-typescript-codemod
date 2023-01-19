@@ -1,1 +1,1 @@
-export const flowTypeAtPos = jest.fn();
+export const flowTypeAtPos = jest.fn()

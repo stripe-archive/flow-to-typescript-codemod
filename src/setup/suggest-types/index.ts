@@ -1,1 +1,1 @@
-export { suggestTypes } from "./suggest-types";
+export { suggestTypes } from './suggest-types'
