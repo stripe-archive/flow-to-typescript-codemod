@@ -19,6 +19,7 @@ import { hasDeclaration } from "../convert/utils/common";
 import { FlowFileList, FlowFileType } from "./find-flow-files";
 import { logger } from "./logger";
 
+// adjust baseDir to match the your local repo
 const git: SimpleGit = simpleGit("../myonvista", { binary: "git" });
 
 export const FlowCommentRegex = /((\/){2,} ?)*@flow.*\n+/;
