@@ -3,6 +3,7 @@ import path from "path";
 import * as t from "@babel/types";
 import * as recast from "recast";
 import { Options } from "recast";
+import { simpleGit, SimpleGit } from "simple-git";
 import * as recastFlowParser from "recast/parsers/flow";
 import { runTransforms } from "./run-transforms";
 import MigrationReporter from "./migration-reporter";
@@ -17,6 +18,8 @@ import { ConfigurableTypeProvider } from "../convert/utils/configurable-type-pro
 import { hasDeclaration } from "../convert/utils/common";
 import { FlowFileList, FlowFileType } from "./find-flow-files";
 import { logger } from "./logger";
+
+const git: SimpleGit = simpleGit("../myonvista", { binary: "git" });
 
 export const FlowCommentRegex = /((\/){2,} ?)*@flow.*\n+/;
 
@@ -149,6 +152,7 @@ export async function processBatchAsync(
           }
         }
 
+        await git.mv(targetFilePath, tsFilePath);
         await fs.outputFile(tsFilePath, newFileText);
       } catch (error) {
         // Report errors, but don’t crash the worker...
