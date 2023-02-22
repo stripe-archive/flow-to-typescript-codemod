@@ -20,7 +20,10 @@ import { FlowFileList, FlowFileType } from "./find-flow-files";
 import { logger } from "./logger";
 
 // adjust baseDir to match your local repo
-const git: SimpleGit = simpleGit("../myonvista", { binary: "git" });
+const git: SimpleGit = simpleGit("../myonvista", {
+  binary: "git",
+  maxConcurrentProcesses: 1000,
+});
 
 export const FlowCommentRegex = /((\/){2,} ?)*@flow.*\n+/;
 
@@ -29,6 +32,14 @@ export const recastOptions: Options = {
   trailingComma: true,
   objectCurlySpacing: false,
 };
+
+async function gitRenameFile(targetFilePath: string, tsFilePath: string) {
+  try {
+    await git.mv(targetFilePath, tsFilePath);
+  } catch (e) {
+    // handle the error
+  }
+}
 
 /**
  * Process a batch of files, running transforms and renaming files
@@ -48,6 +59,7 @@ export async function processBatchAsync(
         ) {
           return;
         }
+        //await new Promise((resolve) => setTimeout(resolve, 5000));
         const fileBuffer = await fs.readFile(filePath);
 
         const fileText = fileBuffer.toString("utf8");
@@ -153,7 +165,7 @@ export async function processBatchAsync(
           }
         }
 
-        await git.mv(targetFilePath, tsFilePath);
+        await gitRenameFile(targetFilePath, tsFilePath)
         await fs.outputFile(tsFilePath, newFileText);
       } catch (error) {
         // Report errors, but don’t crash the worker...
