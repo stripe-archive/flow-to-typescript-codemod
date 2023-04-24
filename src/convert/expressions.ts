@@ -191,7 +191,8 @@ export function transformExpressions({
       if (
         t.isMemberExpression(path.node.callee) &&
         t.isIdentifier(path.node.callee.property) &&
-        path.node.callee.property.name === "reduce"
+        path.node.callee.property.name === "reduce" &&
+        !state.config.silenceNonCriticalLogs
       ) {
         // x.reduce(fn, []) → x.reduce<Array<any>>(fn, []);
         // if the reduce is not typed and the last argument is not a type assertion

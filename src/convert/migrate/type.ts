@@ -63,10 +63,12 @@ function actuallyMigrateType(
     case "ExistsTypeAnnotation":
       // The existential type (`*`) in Flow is unsound and basically `any`. The Flow team even
       // deprecated existentials and plans to replace all usages at FB with `any`.
-      reporter.usedExistentialAny(
-        state.config.filePath,
-        flowType.loc as t.SourceLocation
-      );
+      if (!state.config.silenceNonCriticalLogs) {
+        reporter.usedExistentialAny(
+          state.config.filePath,
+          flowType.loc as t.SourceLocation
+        );
+      }
       return t.tsAnyKeyword();
 
     case "FunctionTypeAnnotation": {
@@ -105,10 +107,12 @@ function actuallyMigrateType(
       // Object in Flow translates to any. The codemod is configurable to allow
       // either a loose translation to any, or a stricter semantic interpretation
       if (id.type === "Identifier" && id.name === "Object" && !params) {
-        reporter.usedFlowAnyObject(
-          state.config.filePath,
-          id.loc as t.SourceLocation
-        );
+        if (!state.configurableTypeProvider.useStrictAnyObjectType) {
+          reporter.usedFlowAnyObject(
+            state.config.filePath,
+            id.loc as t.SourceLocation
+          );
+        }
         return state.configurableTypeProvider.flowAnyObjectType;
       }
 
@@ -116,10 +120,12 @@ function actuallyMigrateType(
       // Function in Flow translates to any. The codemod is configurable to allow
       // either a loose translation to any, or a stricter semantic interpretation
       if (id.type === "Identifier" && id.name === "Function" && !params) {
-        reporter.usedFlowAnyFunction(
-          state.config.filePath,
-          id.loc as t.SourceLocation
-        );
+        if (!state.configurableTypeProvider.useStrictAnyFunctionType) {
+          reporter.usedFlowAnyFunction(
+            state.config.filePath,
+            id.loc as t.SourceLocation
+          );
+        }
         return state.configurableTypeProvider.flowAnyFunctionType;
       }
 

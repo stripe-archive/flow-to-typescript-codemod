@@ -153,6 +153,11 @@ export const parseCommands = (
             default: ["."],
             describe: "Path to source files for conversion.",
           })
+          .option("yarnPath", {
+            type: "string",
+            default: "",
+            describe: "The path to yarn executable.",
+          })
           .option("ignore", {
             type: "array",
             default: [],
@@ -201,7 +206,7 @@ export const parseCommands = (
           .option("dropImportExtensions", {
             type: "boolean",
             default: false,
-            describe: `Remove JS file extensions like '.js' and '.jsx' in imports, since they will not resolve when the extension changes`,
+            describe: `Remove JS file extensions like '.js' and '.jsx' in imports, since they will not resolve when the extension changes.`,
           })
           .option("keepPrivateTypes", {
             type: "boolean",
@@ -238,7 +243,17 @@ export const parseCommands = (
           .option("convertUnannotated", {
             type: "boolean",
             default: false,
-            describe: `Converts files with no flow annotations as no-Flow files`,
+            describe: `Converts files with no flow annotations as no-Flow files.`,
+          })
+          .option("ignoreFlowPragma", {
+            type: "boolean",
+            default: false,
+            describe: `Convert files without @flow pragma.`,
+          })
+          .option("silenceNonCriticalLogs", {
+            type: "boolean",
+            default: false,
+            describe: `Don't log non-critical entries.`,
           });
       },
       convert
@@ -281,13 +296,13 @@ export const parseCommands = (
             type: "string",
             default: "",
             description:
-              "Jira slug to use for suppression comments. E.g JIRA-711",
+              "Jira slug to use for suppression comments. E.g JIRA-711.",
           })
           .option("useIgnore", {
             type: "boolean",
             default: false,
             describe:
-              "Auto suppress any TypeScript errors with a ts-ignore, instead of ts-expect-error",
+              "Auto suppress any TypeScript errors with a ts-ignore, instead of ts-expect-error.",
           })
           .option("removeUnused", {
             type: "boolean",

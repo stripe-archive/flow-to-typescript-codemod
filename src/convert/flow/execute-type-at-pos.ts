@@ -6,10 +6,13 @@ import * as t from "@babel/types";
  */
 export async function executeFlowTypeAtPos(
   filePath: string,
-  location: t.SourceLocation
+  location: t.SourceLocation,
+  yarnPath?: string
 ): Promise<string> {
   const { line, column } = location.start;
-  const command = `$(yarn bin)/flow type-at-pos "${filePath}" ${line} ${
+  const command = `${
+    yarnPath ? yarnPath : "$(yarn bin)/flow"
+  } type-at-pos "${filePath}" ${line} ${
     column + 1
   } --json --from "typescriptify" --quiet`;
 

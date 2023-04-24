@@ -1,9 +1,9 @@
 import * as t from "@babel/types";
 
 export class ConfigurableTypeProvider {
-  private readonly useStrictAnyFunctionType: boolean = false;
+  readonly useStrictAnyFunctionType: boolean = false;
 
-  private readonly useStrictAnyObjectType: boolean = false;
+  readonly useStrictAnyObjectType: boolean = false;
 
   constructor({
     useStrictAnyFunctionType,

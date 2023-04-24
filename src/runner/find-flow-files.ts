@@ -34,7 +34,8 @@ export function findFlowFilesAsync(
   rootDirectory: string,
   ignoredDirectories: Array<string>,
   reporter: MigrationReporter,
-  stripPathsForIgnore: boolean
+  stripPathsForIgnore: boolean,
+  ignoreFlowPragma: boolean
 ): Promise<FlowFileList> {
   return new Promise((_resolve, _reject) => {
     // Tracks whether or not we have rejected our promise.
@@ -71,7 +72,8 @@ export function findFlowFilesAsync(
             directory,
             fileNames[i],
             reporter,
-            stripPathsForIgnore
+            stripPathsForIgnore,
+            ignoreFlowPragma
           );
         }
         // We are done with this async task.
@@ -87,7 +89,8 @@ export function findFlowFilesAsync(
       directory: string,
       fileName: string,
       reporter: MigrationReporter,
-      stripPathsForIgnore: boolean
+      stripPathsForIgnore: boolean,
+      ignoreFlowPragma: boolean
     ) {
       // If we were rejected then we should not continue.
       if (rejected === true) {
@@ -122,7 +125,7 @@ export function findFlowFilesAsync(
           // Otherwise if this is a JavaScript file...
           if (fileName.endsWith(".js") || fileName.endsWith(".jsx")) {
             // Then process the file path as JavaScript.
-            processJavaScriptFilePath(filePath, stats.size, reporter);
+            processJavaScriptFilePath(filePath, stats.size, reporter, ignoreFlowPragma);
           }
         }
         // We are done with this async task
@@ -137,7 +140,8 @@ export function findFlowFilesAsync(
     function processJavaScriptFilePath(
       filePath: string,
       fileByteSize: number,
-      reporter: MigrationReporter
+      reporter: MigrationReporter,
+      ignoreFlowPragma: boolean
     ) {
       // If we were rejected then we should not continue.
       if (rejected === true) {
@@ -161,7 +165,7 @@ export function findFlowFilesAsync(
           }
           // If the buffer has the @flow pragma then add the file path to our
           // final file paths array.
-          if (buffer.includes("@flow")) {
+          if (buffer.includes("@flow") || ignoreFlowPragma) {
             filePaths.push({ filePath, fileType: FlowFileType.FLOW });
           } else if (buffer.includes("@noflow")) {
             filePaths.push({ filePath, fileType: FlowFileType.NO_FLOW });

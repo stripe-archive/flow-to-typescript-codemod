@@ -9,6 +9,9 @@ export type State = {
 
   // Config is used to store immutable configuration
   readonly config: {
+    // The path to yarn executable
+    readonly yarnPath?: string;
+
     // The path of the current file that is being converted
     readonly filePath: string;
 
@@ -27,7 +30,7 @@ export type State = {
     // Should we modify the extension of imports?
     readonly dropImportExtensions: boolean;
 
-    // Should we keep $ private types
+    // Should we keep $ private types?
     readonly keepPrivateTypes: boolean;
 
     // Are we going to force TSX extensions
@@ -35,6 +38,9 @@ export type State = {
 
     // Should we check flow types or just use any?
     readonly disableFlow: boolean;
+
+    // Should report log non-critical entries?
+    readonly silenceNonCriticalLogs: boolean;
   };
 
   // A static type provider for types that may change based on flags

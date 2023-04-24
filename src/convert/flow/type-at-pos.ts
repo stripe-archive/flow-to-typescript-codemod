@@ -34,7 +34,7 @@ export function flowTypeAtPos(
   });
 
   if (processingFlowTypeAtPosQueue === false) {
-    processFlowTypeAtPosQueue();
+    processFlowTypeAtPosQueue(state.config.yarnPath);
   }
 
   return promise
@@ -66,7 +66,7 @@ const flowTypeAtPosQueue: Array<{
 /**
  * Continually process all the entries in `flowTypeAtPosQueue`.
  */
-function processFlowTypeAtPosQueue() {
+function processFlowTypeAtPosQueue(yarnPath?: string) {
   processingFlowTypeAtPosQueue = true;
 
   const entry = flowTypeAtPosQueue.shift();
@@ -76,16 +76,16 @@ function processFlowTypeAtPosQueue() {
     return;
   }
 
-  executeFlowTypeAtPos(entry.filePath, entry.location).then(
+  executeFlowTypeAtPos(entry.filePath, entry.location, yarnPath).then(
     (value) => {
       // Start the next asynchronous `flow type-at-pos` request before resolving the entry!
       // When we resolve the entry some synchronous work will be done to parse the result.
       // We can do that work concurrently while `flow type-at-pos` works.
-      processFlowTypeAtPosQueue();
+      processFlowTypeAtPosQueue(yarnPath);
       entry.resolve(value);
     },
     (value) => {
-      processFlowTypeAtPosQueue();
+      processFlowTypeAtPosQueue(yarnPath);
       entry.migrationReporter.flowFailToParse(
         entry.filePath,
         entry.location,
@@ -118,14 +118,14 @@ function processFlowTypeAtPosStdout(
     return null;
   }
 
-  if (type === "any" && !isExplicit) {
+  if (type === "any" && !isExplicit && !state.config.silenceNonCriticalLogs) {
     migrationReporter.anyFlowType(state.config.filePath, location);
     return null;
   }
 
   // The inferred Flow type is really big, a human probably would not have written it. Don’t
   // return the type.
-  if (type.length >= 100) {
+  if (type.length >= 100 && !state.config.silenceNonCriticalLogs) {
     migrationReporter.complexFlowType(state.config.filePath, location, type);
     return null;
   }
@@ -148,7 +148,8 @@ function processFlowTypeAtPosStdout(
     // `function f(x: string | any)`
     if (
       node.type === "UnionTypeAnnotation" &&
-      node.types.some((unionType) => unionType.type === "AnyTypeAnnotation")
+      node.types.some((unionType) => unionType.type === "AnyTypeAnnotation") &&
+      !state.config.silenceNonCriticalLogs
     ) {
       migrationReporter.anyFlowType(state.config.filePath, location);
       return null;

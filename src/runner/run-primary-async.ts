@@ -45,7 +45,8 @@ export async function runPrimaryAsync(options: ConvertCommandCliArgs) {
           p,
           options.ignore,
           filePathReporter,
-          options.stripPathsForIgnore
+          options.stripPathsForIgnore,
+          options.ignoreFlowPragma
         )
       );
     } else {

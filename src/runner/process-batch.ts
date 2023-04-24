@@ -68,6 +68,7 @@ export async function processBatchAsync(
           hasJsx: false,
           usedUtils: false,
           config: {
+            yarnPath: options.yarnPath,
             filePath,
             isTestFile,
             watermark: options.tag,
@@ -77,6 +78,7 @@ export async function processBatchAsync(
             keepPrivateTypes: options.keepPrivateTypes,
             forceTSX: options.forceTSX,
             disableFlow: options.disableFlow,
+            silenceNonCriticalLogs: options.silenceNonCriticalLogs,
           },
           configurableTypeProvider: new ConfigurableTypeProvider({
             useStrictAnyFunctionType: options.useStrictAnyFunctionType,

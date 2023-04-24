@@ -24,6 +24,8 @@ export interface SetupCommandCliArgs extends SharedCommandCliArgs {
 export interface ConvertCommandCliArgs extends SharedCommandCliArgs {
   // The source path to run against
   path: Array<string>;
+  // The path to yarn executable
+  yarnPath: string;
   // Should a watermark be added to output typescript files
   watermark: boolean;
   // The topline tag used in the watermark. Only used if watermark is enabled
@@ -58,6 +60,10 @@ export interface ConvertCommandCliArgs extends SharedCommandCliArgs {
   stripPathsForIgnore: boolean;
   // Convert flow files with no annotations as no-Flow files
   convertUnannotated: boolean;
+  // Convert files without @flow pragma
+  ignoreFlowPragma: boolean;
+  // Don't log non-critical entries
+  silenceNonCriticalLogs: boolean;
 }
 
 export interface FixCommandCliArgs extends SharedCommandCliArgs {
