@@ -168,6 +168,48 @@ describe("transform declarations", () => {
         });
       });
     });
+
+    describe("change react-router-dom Location and RouterHistory imports", () => {
+      it("keep react-router-dom", async () => {
+        const src = dedent(`
+        import {type Location as L, type RouterHistory as H, useLocation} from 'react-router-dom';
+        const location: L | null = null;
+        const history: H | null = null;
+        `);
+        const expected = dedent(`
+        import {History as H, Location as L} from 'history';
+        import {useLocation} from 'react-router-dom';
+        const location: L | null = null;
+        const history: H | null = null;
+        `);
+        expect(await transform(src)).toBe(expected);
+      });
+
+      it("remove react-router-dom", async () => {
+        const src = dedent(`
+        import {type Location as L, type RouterHistory as H} from 'react-router-dom';
+        const location: L | null = null;
+        const history: H | null = null;
+        `);
+        const expected = dedent(`
+        import {History as H, Location as L} from 'history';
+        const location: L | null = null;
+        const history: H | null = null;
+        `);
+        expect(await transform(src)).toBe(expected);
+      });
+
+      it("do not insert history if one has already been found", async () => {
+        const src = dedent(`
+        import {type RouterHistory} from 'react-router-dom';
+        import {createMemoryHistory} from 'history';
+        `);
+        const expected = dedent(`
+        import {History as RouterHistory, createMemoryHistory} from 'history';
+        `);
+        expect(await transform(src)).toBe(expected);
+      });
+    });
   });
 
   /*

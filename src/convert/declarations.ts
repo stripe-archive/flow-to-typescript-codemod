@@ -62,6 +62,36 @@ const updateReactImports = (
   }
 };
 
+/**
+ * Rename React Router imports for TypeScript
+ */
+const updateReactRouterImports = (
+  node: t.ImportDeclaration,
+  specifier: t.ImportSpecifier
+) => {
+  if (
+    node.source.value === "react-router-dom" &&
+    (specifier.importKind === "type" || node.importKind === "type")
+  ) {
+    // `import type {Match} from 'react-router-dom'` => `import {match} from 'react-router-dom'`
+    if (
+      specifier.type === "ImportSpecifier" &&
+      specifier.imported.type === "Identifier" &&
+      specifier.imported.name === "Match"
+    ) {
+      specifier.imported.name = "match";
+    }
+    // `import {type Match} from 'react-router-dom'` => `import {match} from 'react-router-dom'`
+    if (
+      specifier.type === "ImportSpecifier" &&
+      specifier.local.type === "Identifier" &&
+      specifier.local.name === "Match"
+    ) {
+      specifier.local.name = "match";
+    }
+  }
+};
+
 export function transformDeclarations({
   reporter,
   state,
@@ -106,6 +136,7 @@ export function transformDeclarations({
             (specifier.importKind === "type" || path.node.importKind === "type")
           ) {
             updateReactImports(path.node, specifier);
+            updateReactRouterImports(path.node, specifier);
 
             // `import {type X} from` => `import {X} from`
             if (specifier.importKind === "type") {

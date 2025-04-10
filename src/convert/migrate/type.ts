@@ -756,6 +756,17 @@ function actuallyMigrateType(
         );
       }
 
+      if (id.type === "Identifier" && id.name === "Match") {
+        return t.tsTypeReference(
+          t.identifier("match"),
+          t.tsTypeParameterInstantiation([
+            t.tsTypeReference(
+              t.identifier("{ [key: string]: string | undefined }")
+            ),
+          ])
+        );
+      }
+
       return t.tsTypeReference(id, params);
     }
 
