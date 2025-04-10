@@ -375,9 +375,9 @@ describe("transform type annotations", () => {
 
   // React
 
-  it("Converts React.Node to React.ReactElement in function return", async () => {
+  it("Converts React.Node to ReactNode in function return", async () => {
     const src = `const Component = (props: Props): React.Node => {return <div />};`;
-    const expected = `const Component = (props: Props): React.ReactElement => {return <div />};`;
+    const expected = `const Component = (props: Props) => {return <div />};`;
     expect(await transform(src)).toBe(expected);
   });
 
@@ -449,9 +449,9 @@ describe("transform type annotations", () => {
     expect(await transform(src)).toBe(expected);
   });
 
-  it("Converts React.MixedElement", async () => {
+  it("Strips React.MixedElement", async () => {
     const src = `function f(): React.MixedElement {};`;
-    const expected = `function f(): React.ReactElement {};`;
+    const expected = `function f() {};`;
     expect(await transform(src)).toBe(expected);
   });
 
@@ -461,18 +461,18 @@ describe("transform type annotations", () => {
     expect(await transform(src)).toBe(expected);
   });
 
-  it("Converts React.Node to React.ReactElement in arrow function", async () => {
+  it("Converts React.Node to ReactNode in arrow function", async () => {
     const src = `const Component = (props: Props): React.Node => {return <div />};`;
-    const expected = `const Component = (props: Props): React.ReactElement => {return <div />};`;
+    const expected = `const Component = (props: Props) => {return <div />};`;
     expect(await transform(src)).toBe(expected);
   });
 
-  it("Converts React.Node to React.ReactElement or null in arrow function return", async () => {
+  it("Converts React.Node to ReactNode in arrow function return", async () => {
     const src = dedent`const Component = (props: Props): React.Node => {
       if (foo) return (<div />);
       return null;
     };`;
-    const expected = dedent`const Component = (props: Props): React.ReactElement | null => {
+    const expected = dedent`const Component = (props: Props) => {
       if (foo) return (<div />);
       return null;
     };`;
@@ -481,16 +481,16 @@ describe("transform type annotations", () => {
 
   it("Converts React.Node to React.ReactElement in normal function", async () => {
     const src = `function Component(props: Props): React.Node {return <div />};`;
-    const expected = `function Component(props: Props): React.ReactElement {return <div />};`;
+    const expected = `function Component(props: Props) {return <div />};`;
     expect(await transform(src)).toBe(expected);
   });
 
-  it("Converts React.Node to React.ReactElement or null in normal function return", async () => {
+  it("Strips React.Node in normal function return", async () => {
     const src = dedent`function Component(props: Props): React.Node {
       if (foo) return (<div />);
       return null;
     };`;
-    const expected = dedent`function Component(props: Props): React.ReactElement | null {
+    const expected = dedent`function Component(props: Props) {
       if (foo) return (<div />);
       return null;
     };`;
@@ -515,21 +515,21 @@ describe("transform type annotations", () => {
     expect(await transform(src)).toBe(expected);
   });
 
-  it("Converts React.ElementConfig to JSX.LibraryManagedAttributes", async () => {
+  it("Converts React.ElementConfig to ComponentProps<C>", async () => {
     const src = `type Test = React.ElementConfig<C>;`;
-    const expected = `type Test = JSX.LibraryManagedAttributes<C, React.ComponentProps<C>>;`;
+    const expected = `type Test = ComponentProps<C>;`;
     expect(await transform(src)).toBe(expected);
   });
 
   it("Converts React.ElementConfig and keeps typeof", async () => {
     const src = `type Test = React.ElementConfig<typeof C>;`;
-    const expected = `type Test = JSX.LibraryManagedAttributes<typeof C, React.ComponentProps<typeof C>>;`;
+    const expected = `type Test = ComponentProps<typeof C>;`;
     expect(await transform(src)).toBe(expected);
   });
 
   it("Converts React.ElementConfig with indexing", async () => {
     const src = `type Test = $PropertyType<React.ElementConfig<C>, 'foo'>;`;
-    const expected = `type Test = JSX.LibraryManagedAttributes<C, React.ComponentProps<C>>['foo'];`;
+    const expected = `type Test = ComponentProps<C>['foo'];`;
     expect(await transform(src)).toBe(expected);
   });
 

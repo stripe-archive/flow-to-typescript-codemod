@@ -3,6 +3,8 @@ export const ReactTypes = {
   Child: "ReactChild",
   Children: "ReactChildren",
   Text: "ReactText",
+  Element: "ReactElement",
+  ElementConfig: "ComponentProps",
   Fragment: "ReactFragment",
   FragmentType: "ComponentType",
   Portal: "ReactPortal",

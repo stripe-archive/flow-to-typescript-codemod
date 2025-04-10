@@ -205,6 +205,19 @@ export function addEmptyLineInProgramPath(path: NodePath<t.Program>) {
   path.unshiftContainer("body", t.noop());
 }
 
+export function remove(
+  path: NodePath<t.Node>,
+  filePath: string,
+  reporter: MigrationReporter
+) {
+  try {
+    path.remove();
+  } catch (e) {
+    // Catch the error so conversion of the file can continue.
+    reporter.error(filePath, e);
+  }
+}
+
 /**
  * Recast uses a different format for comments. We need to manually copy them over to the new node.
  * We also attach the old location so that Recast prints it at the same place.

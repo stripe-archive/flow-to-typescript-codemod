@@ -107,6 +107,12 @@ describe("transform declarations", () => {
       expectMigrationReporterMethodNotCalled(`importWithExtension`);
     });
 
+    it("drops React.AbstractComponent imports", async () => {
+      const src = `import {type AbstractComponent, forwardRef} from 'react';`;
+      const expected = `import {forwardRef} from 'react';`;
+      expect(await transform(src)).toBe(expected);
+    });
+
     describe("Flow to TypeScript React import transformations", () => {
       Object.entries(ReactTypes).forEach(([flowType, tsType]) => {
         it(`transforms type imports of ${flowType} from react`, async () => {
@@ -561,17 +567,7 @@ describe("transform declarations", () => {
     expect(await transform(src)).toBe(expected);
   });
 
-  it("Converts React.Node to React.ReactElement in render", async () => {
-    const src = dedent`class Foo extends React.Component {
-      render(): React.Node {return <div />};
-    };`;
-    const expected = dedent`class Foo extends React.Component {
-      render(): React.ReactElement {return <div />};
-    };`;
-    expect(await transform(src)).toBe(expected);
-  });
-
-  it("Adds null to React.ReactElement in render", async () => {
+  it("Converts React.Node to ReactNode in render", async () => {
     const src = dedent`class Foo extends React.Component {
       render(): React.Node {
         if (foo) return (<div />);
@@ -579,7 +575,7 @@ describe("transform declarations", () => {
       };
     };`;
     const expected = dedent`class Foo extends React.Component {
-      render(): React.ReactElement | null {
+      render(): ReactNode {
         if (foo) return (<div />);
         return null;
       };
@@ -587,23 +583,36 @@ describe("transform declarations", () => {
     expect(await transform(src)).toBe(expected);
   });
 
-  it("Converts React.Node to React.ReactElement for render in arrow", async () => {
+  it("Strips out React.Node for render in arrow", async () => {
     const src = dedent`class Foo extends React.Component {
       render = (): React.Node => {return <div />};
     };`;
     const expected = dedent`class Foo extends React.Component {
-      render = (): React.ReactElement => {return <div />};
+      render = () => {return <div />};
     };`;
     expect(await transform(src)).toBe(expected);
   });
 
-  it("Does not convert React.Node to React.ReactElement in non-render", async () => {
+  it("Does not convert React.Node to ReactNode in non-render", async () => {
     const src = dedent`class Foo extends React.Component {
       rendering(): React.Node {return <div />};
     };`;
     const expected = dedent`class Foo extends React.Component {
       rendering(): React.ReactNode {return <div />};
     };`;
+    expect(await transform(src)).toBe(expected);
+  });
+
+  it("removes React.AbstractComponent<>", async () => {
+    const src = dedent`
+    // @flow
+    const C1: AbstractComponent<Props, Ref> = memo<Props>((props) => null);
+    const C2: AbstractComponent<Props, Ref> = memo<Props>(Comp);
+    `;
+    const expected = dedent`
+    const C1 = memo<Props>((props) => null);
+    const C2 = memo<Props>(Comp);
+    `;
     expect(await transform(src)).toBe(expected);
   });
 

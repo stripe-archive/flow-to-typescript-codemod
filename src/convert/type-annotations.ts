@@ -1,7 +1,7 @@
 import * as t from "@babel/types";
 import traverse from "@babel/traverse";
-import { replaceWith, inheritLocAndComments } from "./utils/common";
-import { migrateType } from "./migrate/type";
+import { remove, replaceWith, inheritLocAndComments } from "./utils/common";
+import { migrateType, REMOVE_ME_ID } from "./migrate/type";
 import { migrateTypeParameterDeclaration } from "./migrate/type-parameter";
 import { TransformerInput } from "./transformer";
 import { MetaData } from "./migrate/metadata";
@@ -60,14 +60,28 @@ export function transformTypeAnnotations({
         metaData.returnType = true;
       }
 
-      replaceWith(
-        path,
-        t.tsTypeAnnotation(
-          migrateType(reporter, state, path.node.typeAnnotation, metaData)
-        ),
-        state.config.filePath,
-        reporter
+      const tsType = migrateType(
+        reporter,
+        state,
+        path.node.typeAnnotation,
+        metaData
       );
+
+      if (
+        metaData.returnType &&
+        tsType.type === "TSTypeReference" &&
+        tsType.typeName.type === "Identifier" &&
+        tsType.typeName.name === REMOVE_ME_ID
+      ) {
+        remove(path, state.config.filePath, reporter);
+      } else {
+        replaceWith(
+          path,
+          t.tsTypeAnnotation(tsType),
+          state.config.filePath,
+          reporter
+        );
+      }
     },
 
     TypeParameterDeclaration(path) {

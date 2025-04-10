@@ -17,7 +17,7 @@ describe("transform type annotations", () => {
 
   it("converts React$Element", async () => {
     const src = `const Component = (props: Props): React$Element => {return <div />};`;
-    const expected = `const Component = (props: Props): React.Element => {return <div />};`;
+    const expected = `const Component = (props: Props): React.ReactElement => {return <div />};`;
     expect(await transform(src)).toBe(expected);
   });
 

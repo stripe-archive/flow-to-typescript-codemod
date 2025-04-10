@@ -145,6 +145,18 @@ export function transformDeclarations({
           }
         }
 
+        // `import {type AbstractComponent, ...} from 'react'` => `import {...} from 'react'`
+        if (path.node.source.value === "react") {
+          path.node.specifiers = path.node.specifiers.filter(
+            (s) =>
+              !(
+                s.type === "ImportSpecifier" &&
+                s.imported.type === "Identifier" &&
+                s.imported.name === "AbstractComponent"
+              )
+          );
+        }
+
         return;
       }
 
@@ -291,6 +303,19 @@ export function transformDeclarations({
     },
 
     VariableDeclarator(path) {
+      // `const c: AbstractComponent<Props, RefType> =` → `const c =`
+      if (
+        path.node.id.type === "Identifier" &&
+        path.node.id.typeAnnotation?.type === "TypeAnnotation" &&
+        path.node.id.typeAnnotation.typeAnnotation.type ===
+          "GenericTypeAnnotation" &&
+        path.node.id.typeAnnotation.typeAnnotation.id.type === "Identifier" &&
+        path.node.id.typeAnnotation.typeAnnotation.id.name ===
+          "AbstractComponent"
+      ) {
+        path.node.id.typeAnnotation = null;
+      }
+
       if (
         path.parent.type === "VariableDeclaration" &&
         path.parentPath.parent.type !== "ForStatement" &&

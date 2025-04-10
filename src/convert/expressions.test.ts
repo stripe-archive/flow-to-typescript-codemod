@@ -220,6 +220,69 @@ describe("transform expressions", () => {
     });
   });
 
+  describe("React.AbstractComponent", () => {
+    it("should handle anonymous component", async () => {
+      const src = dedent`
+      // @flow
+      export default (memo<Props>((props) => null): AbstractComponent<Props, Ref>);
+      `;
+      const expected = dedent`
+      export default memo<Props>((props) => null);
+      `;
+      expect(await transform(src)).toBe(expected);
+    });
+
+    it("should handle named component", async () => {
+      const src = dedent`
+      // @flow
+      export default (memo<Props>(Comp): AbstractComponent<Props, Ref>);
+      `;
+      const expected = dedent`
+      export default memo<Props>(Comp);
+      `;
+      expect(await transform(src)).toBe(expected);
+    });
+
+    it("should not remove when annotation is not for a function call", async () => {
+      const src = dedent`
+      export default function withFoo(f: Foo): <P>(S: AbstractComponent<P>) => AbstractComponent<P> {
+        return function withFoo<P>(Subject: AbstractComponent<P>): AbstractComponent<P & InjectedP> {
+          return () => null;
+        };
+      }
+      `;
+      expect(await transform(src)).toBe(src);
+    });
+  });
+
+  describe("React.forwardRef", () => {
+    it("should handle anonymous component", async () => {
+      const src = dedent`
+      // @flow
+      const C: AbstractComponent<Props, Ref> = forwardRef<Props, Ref>((props, ref) => null);
+      export default (forwardRef<Props, Ref>((props, ref) => null): AbstractComponent<Props, Ref>);
+      `;
+      const expected = dedent`
+      const C = forwardRef<Ref, Props>((props, ref) => null);
+      export default forwardRef<Ref, Props>((props, ref) => null);
+      `;
+      expect(await transform(src)).toBe(expected);
+    });
+
+    it("should handle named component", async () => {
+      const src = dedent`
+      // @flow
+      const C: AbstractComponent<Props, mixed> = forwardRef<Props, Ref>(Comp);
+      export default (forwardRef<Props, Ref>(Comp): AbstractComponent<Props, mixed>);
+      `;
+      const expected = dedent`
+      const C = forwardRef<Ref, Props>(Comp);
+      export default forwardRef<Ref, Props>(Comp);
+      `;
+      expect(await transform(src)).toBe(expected);
+    });
+  });
+
   describe.each(JEST_MOCK_METHODS)("jest.%s paths", (mockMethod) => {
     it("should do nothing if there is no extension already", async () => {
       const src = dedent`jest.${mockMethod}('foo');`;

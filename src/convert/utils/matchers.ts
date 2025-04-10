@@ -9,11 +9,20 @@ export function isIdentifierNamed(name: string) {
  * @param leftName - Left side of the type, e.g. React
  * @param rightName - Right side of the type
  */
-export function matchesFullyQualifiedName(leftName: string, rightName: string) {
+function matchesFullyQualifiedName(leftName: string, rightName: string) {
   const leftMatcher = isIdentifierNamed(leftName);
   const rightMatcher = isIdentifierNamed(rightName);
   return (node: t.Identifier | t.TSQualifiedName) =>
     t.isTSQualifiedName(node) &&
     leftMatcher(node.left) &&
     rightMatcher(node.right);
+}
+
+/**
+ * Utility for checking React.* (e.g. matches both React.Node and Node)
+ */
+export function matchesReact(specifierName: string) {
+  return (node: t.Identifier | t.TSQualifiedName) =>
+    isIdentifierNamed(specifierName)(node) ||
+    matchesFullyQualifiedName("React", specifierName)(node);
 }
