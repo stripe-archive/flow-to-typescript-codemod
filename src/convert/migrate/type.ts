@@ -144,6 +144,26 @@ function actuallyMigrateType(
         return t.tsTypeReference(t.identifier("ReadonlyArray"), params);
       }
 
+      // `$ReadOnlySet<T>` → `ReadonlySet<T>`
+      if (
+        id.type === "Identifier" &&
+        id.name === "$ReadOnlySet" &&
+        params &&
+        params.params.length === 1
+      ) {
+        return t.tsTypeReference(t.identifier("ReadonlySet"), params);
+      }
+
+      // `$ReadOnlyMap<K, V>` → `ReadonlyMap<K, V>`
+      if (
+        id.type === "Identifier" &&
+        id.name === "$ReadOnlyMap" &&
+        params &&
+        params.params.length === 2
+      ) {
+        return t.tsTypeReference(t.identifier("ReadonlyMap"), params);
+      }
+
       // `$ReadOnly<T>` → `Readonly<T>`
       if (
         id.type === "Identifier" &&
@@ -178,10 +198,10 @@ function actuallyMigrateType(
         return t.tsIndexedAccessType(params.params[0], typeOperator);
       }
 
-      // `$Shape<T>` → `Partial<T>`
+      // `$Shape<T>|$Partial<T>` → `Partial<T>`
       if (
         id.type === "Identifier" &&
-        id.name === "$Shape" &&
+        (id.name === "$Shape" || id.name === "$Partial") &&
         params &&
         params.params.length === 1
       ) {
@@ -739,6 +759,13 @@ function actuallyMigrateType(
       return t.tsTypeReference(id, params);
     }
 
+    // `T[K]` → `T[K]`
+    case "IndexedAccessType":
+      return t.tsIndexedAccessType(
+        migrateType(reporter, state, flowType.objectType),
+        migrateType(reporter, state, flowType.indexType)
+      );
+
     case "InterfaceTypeAnnotation":
       throw new Error(`Unsupported AST node: ${JSON.stringify(flowType.type)}`);
 
@@ -884,6 +911,23 @@ function actuallyMigrateType(
       }
     }
 
+    // `T?.[K]` → `NonNullable<T>[K] | null | undefined`
+    case "OptionalIndexedAccessType": {
+      return t.tsUnionType([
+        t.tsIndexedAccessType(
+          t.tsTypeReference(
+            t.identifier("NonNullable"),
+            t.tsTypeParameterInstantiation([
+              migrateType(reporter, state, flowType.objectType),
+            ])
+          ),
+          migrateType(reporter, state, flowType.indexType)
+        ),
+        t.tsNullKeyword(),
+        t.tsUndefinedKeyword(),
+      ]);
+    }
+
     case "StringLiteralTypeAnnotation":
       return t.tsLiteralType(t.stringLiteral(flowType.value));
 
@@ -961,6 +1005,7 @@ function actuallyMigrateType(
       const never: { type: string } = flowType;
       reporter.unhandledFlowInputNode(
         state.config.filePath,
+        // @ts-expect-error loc not found
         flowType.loc as t.SourceLocation,
         (flowType as unknown as { name: string }).name ?? "undefined",
         JSON.stringify(never.type)
