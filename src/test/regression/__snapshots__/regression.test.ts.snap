@@ -6,7 +6,7 @@ exports[`Regression tests flow_typescript_differences 1`] = `
 
 // bounded polymorphism
 function fooGood<T extends {
-  x: number
+  x: number;
 }>(obj: T): T {
   console.log(Math.abs(obj.x));
   return obj;
@@ -23,12 +23,12 @@ function fnOptional(x?: number) {}
 
 // Exact/partial types
 type ExactUser = {
-  name: string,
-  age: number
+  name: string;
+  age: number;
 };
 type User = {
-  name: string,
-  age: number
+  name: string;
+  age: number;
 };
 type OptionalUser = Partial<User>;
 
@@ -77,7 +77,7 @@ const onePlusArrow = [1, 2, 3].map((a) => a + 1);
 
 // Lookup types
 type A = {
-  thing: string
+  thing: string;
 };
 
 // when the property is a string constant use $PropertyType (i.e. you know it when typing)
@@ -110,15 +110,15 @@ declare var e: E; // E is number
 
 // Mapped types
 type InputType = {
-  hello: string
+  hello: string;
 };
 
 type MappedType = Flow.ObjMap<InputType, () => number>;
 
 type FormFieldDef<T> = {
-  label: string,
-  description?: string,
-  default: T | (() => T)
+  label: string;
+  description?: string;
+  default: T | (() => T);
 };
 
 type ExtractShape = <T>(arg1: T) => FormFieldDef<T>;
@@ -137,34 +137,34 @@ declare class Adder {
 
 // Readonly
 type B = {
-  readonly b: string
+  readonly b: string;
 };
 
 let b: B = {b: 'something'};
 
 // Difference
 type C = Flow.Diff<{
-  a: string,
-  b: number
+  a: string;
+  b: number;
 }, {
-  a: string
+  a: string;
 }>;
 
 // Rest
 type Props = {
-  name: string,
-  age: number
+  name: string;
+  age: number;
 };
 
 const propsRest: Props = {name: 'Jon', age: 42};
 const {age, ...otherProps} = propsRest;
 (otherProps as Partial<Flow.Diff<Props, {
-  age: number
+  age: number;
 }>>);
 
 // Same
 type F = {
-  (): string
+  (): string;
 };
 const f: F = () => 'hello';
 const hello: string = f();

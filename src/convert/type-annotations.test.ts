@@ -158,7 +158,7 @@ describe("transform type annotations", () => {
   it("Does not convert string Object key types to records", async () => {
     const src = `const MyObj: {[key: string]: ValueType} = {};`;
     const expected = dedent`const MyObj: {
-      [key: string]: ValueType
+      [key: string]: ValueType;
     } = {};`;
     expect(await transform(src)).toBe(expected);
   });
@@ -166,7 +166,7 @@ describe("transform type annotations", () => {
   it("Does not convert number Object key types to records", async () => {
     const src = `const MyObj: {[key: number]: ValueType} = {};`;
     const expected = dedent`const MyObj: {
-      [key: number]: ValueType
+      [key: number]: ValueType;
     } = {};`;
     expect(await transform(src)).toBe(expected);
   });
@@ -323,7 +323,7 @@ describe("transform type annotations", () => {
     `;
     const expected = dedent`
     type MockApiOptions = {
-      errors: jest.MockedFunction<any>
+      errors: jest.MockedFunction<any>;
     };
     `;
     expect(await transform(src)).toBe(expected);
@@ -342,7 +342,7 @@ describe("transform type annotations", () => {
       startDate: moment
     };`;
     const expected = dedent`type Test = {
-      startDate: moment.Moment
+      startDate: moment.Moment;
     };`;
     expect(await transform(src)).toBe(expected);
   });
@@ -532,7 +532,7 @@ describe("transform type annotations", () => {
     };`;
     const expected = dedent`
     type Props = {
-      children: Array<MenuChildren> | MenuChildren
+      children: Array<MenuChildren> | MenuChildren;
     };`;
     expect(await transform(src)).toBe(expected);
   });
@@ -595,14 +595,14 @@ describe("transform type annotations", () => {
     it("Does not convert {} to Record<any, any> if an object has any properties", async () => {
       // dedent messes up the indentation of the string
       const src = `function f(): {
-  prop: boolean
+  prop: boolean;
 } {return {}}
 let af: () => {
-  prop: boolean
+  prop: boolean;
 }
 class C {
   m(): {
-    prop: boolean
+    prop: boolean;
   } {return {}}
 }`;
 
@@ -764,9 +764,9 @@ class C {
 
     const expected = dedent`
     export type Test = {
-      <T>(arg1: undefined | Example | Example[], arg2?: () => T | null | undefined): T,
-      (arg1: undefined | Example | Example[]): Attributes,
-      foo: number
+      <T>(arg1: undefined | Example | Example[], arg2?: () => T | null | undefined): T;
+      (arg1: undefined | Example | Example[]): Attributes;
+      foo: number;
     };
     `;
     expect(await transform(src)).toBe(expected);
@@ -783,9 +783,9 @@ class C {
 
     const expected = dedent`
     type Test = {
-      <T>(arg1: undefined | Example | Example[], arg2?: () => T | null | undefined): T,
-      (arg1: undefined | Example | Example[]): Attributes,
-      foo: number
+      <T>(arg1: undefined | Example | Example[], arg2?: () => T | null | undefined): T;
+      (arg1: undefined | Example | Example[]): Attributes;
+      foo: number;
     };
     `;
     expect(await transform(src)).toBe(expected);
