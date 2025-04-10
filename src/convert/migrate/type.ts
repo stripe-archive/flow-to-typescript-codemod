@@ -789,8 +789,11 @@ function actuallyMigrateType(
       return t.tsNeverKeyword();
 
     case "NullableTypeAnnotation": {
+      const type = migrateType(reporter, state, flowType.typeAnnotation);
       return t.tsUnionType([
-        migrateType(reporter, state, flowType.typeAnnotation),
+        flowType.typeAnnotation.type === "FunctionTypeAnnotation"
+          ? t.tsParenthesizedType(type)
+          : type,
         t.tsNullKeyword(),
         t.tsUndefinedKeyword(),
       ]);
@@ -907,7 +910,7 @@ function actuallyMigrateType(
       if (types.length === 1) {
         return types[0];
       } else {
-        return t.tsIntersectionType(types);
+        return t.tsParenthesizedType(t.tsIntersectionType(types));
       }
     }
 

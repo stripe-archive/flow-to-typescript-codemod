@@ -72,6 +72,14 @@ describe("transform type annotations", () => {
     expect(await transform(src)).toBe(expected);
   });
 
+  it("Converts maybe function", async () => {
+    const src = dedent`
+    const a: ?() => void = null;`;
+    const expected = dedent`
+    const a: (() => void) | null | undefined = null;`;
+    expect(await transform(src)).toBe(expected);
+  });
+
   it("Keeps void promises as void", async () => {
     const src = `function f(): Promise<void> {};`;
     const expected = `function f(): Promise<void> {};`;
@@ -764,7 +772,7 @@ class C {
 
     const expected = dedent`
     export type Test = {
-      <T>(arg1: undefined | Example | Example[], arg2?: () => T | null | undefined): T;
+      <T>(arg1: undefined | Example | Example[], arg2?: (() => T) | null | undefined): T;
       (arg1: undefined | Example | Example[]): Attributes;
       foo: number;
     };
@@ -783,7 +791,7 @@ class C {
 
     const expected = dedent`
     type Test = {
-      <T>(arg1: undefined | Example | Example[], arg2?: () => T | null | undefined): T;
+      <T>(arg1: undefined | Example | Example[], arg2?: (() => T) | null | undefined): T;
       (arg1: undefined | Example | Example[]): Attributes;
       foo: number;
     };
