@@ -3,6 +3,11 @@ import traverse from "@babel/traverse";
 import { replaceWith } from "./utils/common";
 import { TransformerInput } from "./transformer";
 
+const isRelayEmittedType = (name: string): boolean =>
+  ["fragmentType", "data", "key", "variables"].some((relayTypeSuffix) =>
+    name.endsWith(relayTypeSuffix)
+  );
+
 /**
  * Flow commonly uses `$` to denote private type members like React$Node.
  * This syntax is hard to account for everywhere, so we convert it to `.` at the start.
@@ -16,7 +21,10 @@ export function transformPrivateTypes({
     Identifier(path) {
       const id = path.node;
       const hasPrivateType =
-        /\w\$\w/.test(id.name) && !state.config.keepPrivateTypes;
+        /\w\$\w/.test(id.name) &&
+        !isRelayEmittedType(id.name) &&
+        !id.name.startsWith("$IMPORTED_TYPE$") &&
+        !state.config.keepPrivateTypes;
       const privateReactType = id.name.startsWith("React$");
       const privateFlowType = id.name.startsWith("$FlowFixMe");
       const isTypeAnnotation = path.parentPath.type === "GenericTypeAnnotation";
