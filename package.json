@@ -20,7 +20,6 @@
     "dev": "yarn build && node ./dist/index.js",
     "typescriptify": "yarn build && node ./dist/index.js",
     "lint": "eslint --ext ts src",
-    "prepare": "yarn patch-package",
     "prettier": "prettier --write 'src/**/*.{js,jsx,mdx,ts,tsx}' !src/test/test_files/*.{js,jsx,ts,tsx}",
     "test": "jest",
     "types": "tsc -b ."
@@ -63,7 +62,6 @@
     "ignore": "^5.1.9",
     "jest": "^26.0.0",
     "jest-junit": "^12.0.0",
-    "patch-package": "^6.4.7",
     "prettier": "^2.4.1",
     "recast": "0.23.4",
     "signale": "^1.4.0",

@@ -1,5 +1,3 @@
-
-
 <div align="center">
   <img
     src="./llama.png"
@@ -9,7 +7,6 @@
   <h1>Flow to TypeScript Codemod</h1>
   <br />
 </div>
-
 
 > <img src="https://stripe.dev/images/badges/archived.png" width="250">
 >
@@ -26,7 +23,7 @@ It has a few commands to automate the separate steps of a migration:
 
 Every codebase and migration will be slightly different, so we recommend forking this repository and modifying it as needed for your use case. Our applications are written in React, so other frameworks will need additional work to support.
 
-> __Note__: We also recommend being on a version of Flow higher than `v0.92.1`, for best support retrieving missing types from Flow. Newer versions of Flow will work better.
+> **Note**: We also recommend being on a version of Flow higher than `v0.92.1`, for best support retrieving missing types from Flow. Newer versions of Flow will work better.
 
 ## 🚀 Quick start
 
@@ -49,7 +46,7 @@ yarn typescriptify fix --autoSuppressErrors -p ../path/to/your/codebase --config
 
 ```
 
-> __Note__: You can publish this package or link it using a workspace management tool to install it into multiple projects.
+> **Note**: You can publish this package or link it using a workspace management tool to install it into multiple projects.
 
 ## 🔨 Basic usage
 
@@ -60,12 +57,12 @@ typescriptify [command]
 
 Commands:
   typescriptify setup    Set your project up to support TypeScript.
-  typescriptify convert  Convert Flow-typed files to TypeScript.                              
-  typescriptify fix      Use the TypeScript compiler to identify and fix errors.             
+  typescriptify convert  Convert Flow-typed files to TypeScript.
+  typescriptify fix      Use the TypeScript compiler to identify and fix errors.
 
 Options:
-  --version  Show version number                                                                                                                           
-  --help     Show help                                                                                                                                     
+  --version  Show version number
+  --help     Show help
 
 Examples:
   typescriptify <setup,convert,fix> --help                                         Show usage instructions for a specific command.
@@ -73,7 +70,7 @@ Examples:
   typescriptify convert --path src/ test/                                          Run the codemod on multiple paths.
   typescriptify convert --path . --ignore flow_typed/                              Ignore files from conversion.
   typescriptify convert --path ./src --format csv --output ./migration-report.csv  Generate a CSV migration report.
-  typescriptify convert --path . --write --delete                                  Fully convert a project to TypeScript, 
+  typescriptify convert --path . --write --delete                                  Fully convert a project to TypeScript,
                                                                                    writing files and deleting Flow files.
   typescriptify convert --path . --write --target=./dist                           Specify a directory to output the TypeScript files.
   typescriptify fix --autoSuppressErrors --removeUnused                            Remove unused ts-expect-errors, and add any for current errors.
@@ -82,6 +79,7 @@ Examples:
 ```
 
 ## 🏃 Running conversions from Flow to TypeScript
+
 ### Dry run
 
 By default, the codemod will run a dry run against your codebase. This mode will not actually write any TypeScript files, but will collect any potential problems in the Flow code that you may want to investigate prior to doing the actual conversion:
@@ -117,6 +115,7 @@ Flow.Diff<A, B>;
 These types are defined in `./flow.d.ts`, and you'll need to do some setup to make the import work. At Stripe, we published a version of this package internally so it could be installed in each codebase and the types would be available. You could also copy `flow.d.ts` into your project and use [paths](https://www.typescriptlang.org/docs/handbook/module-resolution.html#path-mapping) to resolve the import.
 
 ## 📌 Advanced usage
+
 <details>
   <summary>Click to expand!</summary>
   
@@ -126,6 +125,7 @@ After conversion, there will likely be a number of errors in the converted TypeS
 ```bash
 yarn typescriptify fix --autoSuppressErrors --jiraSlug <slug i.e JIRA-722>
 ```
+
 ### Auto-generating declarations
 
 If you want to continue writing Flow, but generate additional TypeScript versions, you can use the watermarking flag. Adding the `--watermark` argument will add a watermark to every file:
@@ -135,6 +135,7 @@ yarn typescriptify convert --watermark --path <path to source directory>
 ```
 
 You can configure the codemod to skip files without a watermark when doing future conversions. Remove the watermark from a file to make manual edits to the type.
+
 ### Supporting prop spreads
 
 If your codebase follows the pattern of accepting any prop, and then forwarding them to another component like this:
@@ -142,8 +143,8 @@ If your codebase follows the pattern of accepting any prop, and then forwarding 
 ```ts
 const MyComponent = (props: Props) => {
   const { myProp, ...rest } = props;
-  return <AnotherComponent test={myProp} {...rest} />
-}
+  return <AnotherComponent test={myProp} {...rest} />;
+};
 ```
 
 Flow was likely typing your extra parameters as `any`, and those will be type failures in TypeScript.
@@ -172,6 +173,7 @@ yarn lint
 ## 📝 Notes
 
 We've compiled our [notes](NOTES.md) documenting the complex type conversions.
+
 ## 🎨 Prior art
 
 This project was built on top of [Airtable's TypeScript Codemod](https://github.com/Airtable/typescript-migration-codemod).
@@ -181,9 +183,13 @@ We're thankful for the Airtable team ([Caleb Meredith](https://github.com/calebm
 
 This project uses the [MIT license](LICENSE).
 
+## Thanks
+
+Thank you to the developers at Pinterest for [contributing some patches](https://github.com/stripe-archive/flow-to-typescript-codemod/pull/7) from their migration!
+
 ## ✨ Contributing
 
-This project is not being actively maintained. Please feel free to fork this repository to add changes as needed. Every migration will have some different patterns that need special logic, so it would be hard to maintain any general purpose tool for this task.
+This project is not being actively maintained. Please feel free to fork this repository to add changes as needed. Every migration will have some different patterns that need special logic, so it would be hard to maintain any general purpose tool for this task. That said, if you complete a migration and would like to contribute some work back feel free to open a PR and we'll look at it if we have time. Thanks!
 
 If you have questions about this code or our migration, you can reach out to members of our team:
 
@@ -196,4 +202,3 @@ If you have questions about this code or our migration, you can reach out to mem
     <td align="center"><a href="https://github.com/alunny"><img src="https://avatars.githubusercontent.com/u/48361?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Andrew Lunny</b></sub></a><br /></td>
   </tr>
 </table>
-
