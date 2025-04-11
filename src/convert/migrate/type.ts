@@ -4,7 +4,6 @@ import {
   inheritLocAndComments,
   GlobalTypes,
   LiteralTypes,
-  hasNullReturn,
 } from "../utils/common";
 import {
   migrateTypeParameterDeclaration,
@@ -18,9 +17,11 @@ import {
   MomentTypes,
 } from "../utils/type-mappings";
 import { State } from "../../runner/state";
-import { matchesFullyQualifiedName } from "../utils/matchers";
+import { matchesReact } from "../utils/matchers";
 import { migrateFunctionParameters } from "./function-parameter";
 import { MetaData } from "./metadata";
+
+export const REMOVE_ME_ID = "__RemoveMe__";
 
 export function migrateType(
   reporter: MigrationReporter,
@@ -144,6 +145,26 @@ function actuallyMigrateType(
         return t.tsTypeReference(t.identifier("ReadonlyArray"), params);
       }
 
+      // `$ReadOnlySet<T>` → `ReadonlySet<T>`
+      if (
+        id.type === "Identifier" &&
+        id.name === "$ReadOnlySet" &&
+        params &&
+        params.params.length === 1
+      ) {
+        return t.tsTypeReference(t.identifier("ReadonlySet"), params);
+      }
+
+      // `$ReadOnlyMap<K, V>` → `ReadonlyMap<K, V>`
+      if (
+        id.type === "Identifier" &&
+        id.name === "$ReadOnlyMap" &&
+        params &&
+        params.params.length === 2
+      ) {
+        return t.tsTypeReference(t.identifier("ReadonlyMap"), params);
+      }
+
       // `$ReadOnly<T>` → `Readonly<T>`
       if (
         id.type === "Identifier" &&
@@ -178,10 +199,10 @@ function actuallyMigrateType(
         return t.tsIndexedAccessType(params.params[0], typeOperator);
       }
 
-      // `$Shape<T>` → `Partial<T>`
+      // `$Shape<T>|$Partial<T>` → `Partial<T>`
       if (
         id.type === "Identifier" &&
-        id.name === "$Shape" &&
+        (id.name === "$Shape" || id.name === "$Partial") &&
         params &&
         params.params.length === 1
       ) {
@@ -536,29 +557,24 @@ function actuallyMigrateType(
         }
       }
       if (
-        ((matchesFullyQualifiedName("React", "Node")(id) &&
+        (((matchesReact("Node")(id) || matchesReact("ReactNode")(id)) &&
           isRenderMethodOrNonClassMethodReturnType) ||
-          matchesFullyQualifiedName("React", "MixedElement")(id)) &&
+          matchesReact("MixedElement")(id)) &&
         !params
       ) {
-        const parentNode = metaData?.path?.parentPath?.node;
-        let hasNull = false;
-        if (parentNode && "body" in parentNode) {
-          const parentPath = metaData?.path?.parentPath;
-          const scope = metaData?.path?.scope;
-          hasNull = hasNullReturn(
-            parentNode.body as t.BlockStatement,
-            scope,
-            parentPath
-          );
-        }
-        const reactElement = t.tsTypeReference(
-          t.tsQualifiedName(t.identifier("React"), t.identifier("ReactElement"))
-        );
-        if (hasNull) {
-          return t.tsUnionType([reactElement, t.tsNullKeyword()]);
+        const parentType = metaData?.path?.parentPath?.type;
+        const parentReturnType =
+          // @ts-expect-error returnType not found
+          metaData?.path?.parentPath?.node?.returnType?.typeAnnotation?.id
+            ?.name;
+        if (
+          (parentType === "FunctionDeclaration" ||
+            parentType === "ArrowFunctionExpression") &&
+          parentReturnType !== "$ReadOnlyArray"
+        ) {
+          return t.tsTypeReference(t.identifier(REMOVE_ME_ID));
         } else {
-          return reactElement;
+          return t.tsTypeReference(t.identifier("ReactNode"));
         }
       }
 
@@ -567,7 +583,7 @@ function actuallyMigrateType(
       // convert this flow type to something that TypeScript understands so we can get the less strict children
       // prop checking.
       if (
-        matchesFullyQualifiedName("React", "ChildrenArray")(id) &&
+        matchesReact("ChildrenArray")(id) &&
         params &&
         params.params.length === 1
       ) {
@@ -597,33 +613,17 @@ function actuallyMigrateType(
         );
       }
 
-      // React.ElementConfig<T> -> JSX.LibraryManagedAttributes<T, React.ComponentProps<T>>
+      // ElementConfig<T> -> ComponentProps<T>
       if (
-        id.type === "TSQualifiedName" &&
-        id.left.type === "Identifier" &&
-        id.left.name === "React" &&
-        id.right.type === "Identifier" &&
-        id.right.name === "ElementConfig" &&
+        matchesReact("ElementConfig")(id) &&
         params &&
         params.params.length === 1
       ) {
         const parameter = params.params[0];
 
         return t.tsTypeReference(
-          t.tsQualifiedName(
-            t.identifier("JSX"),
-            t.identifier("LibraryManagedAttributes")
-          ),
-          t.tsTypeParameterInstantiation([
-            parameter,
-            t.tsTypeReference(
-              t.tsQualifiedName(
-                t.identifier("React"),
-                t.identifier("ComponentProps")
-              ),
-              t.tsTypeParameterInstantiation([parameter])
-            ),
-          ])
+          t.identifier("ComponentProps"),
+          t.tsTypeParameterInstantiation([parameter])
         );
       }
 
@@ -694,11 +694,25 @@ function actuallyMigrateType(
         }
       }
 
+      // `Portal/ElementProps/Etc<T>` → `ReactPortal/ComponentProps/Etc`
+      // NOTE: skipping Node, Child, Children, Text, Fragment, FragmentType because the names are too
+      // generic and we don't want to accidentally convert the wrong thing. For example, we don't want
+      // to covert Node to ReactNode because Node is also a global builtin type type for DOM Nodes.
+      if (
+        id.type === "Identifier" &&
+        ["Portal", "ElementProps", "StatelessFunctionalComponent"].includes(
+          id.name
+        )
+      ) {
+        return t.tsTypeReference(
+          t.identifier(ReactTypes[id.name as keyof typeof ReactTypes]),
+          params
+        );
+      }
+
       // `React.Portal/Children/Etc<T>` → `React.ReactPortal/ReactChildren/Etc`
       if (
         id.type === "TSQualifiedName" &&
-        id.left.type === "Identifier" &&
-        id.left.name === "React" &&
         id.right.type === "Identifier" &&
         id.right.name in ReactTypes
       ) {
@@ -736,8 +750,26 @@ function actuallyMigrateType(
         );
       }
 
+      if (id.type === "Identifier" && id.name === "Match") {
+        return t.tsTypeReference(
+          t.identifier("match"),
+          t.tsTypeParameterInstantiation([
+            t.tsTypeReference(
+              t.identifier("{ [key: string]: string | undefined }")
+            ),
+          ])
+        );
+      }
+
       return t.tsTypeReference(id, params);
     }
+
+    // `T[K]` → `T[K]`
+    case "IndexedAccessType":
+      return t.tsIndexedAccessType(
+        migrateType(reporter, state, flowType.objectType),
+        migrateType(reporter, state, flowType.indexType)
+      );
 
     case "InterfaceTypeAnnotation":
       throw new Error(`Unsupported AST node: ${JSON.stringify(flowType.type)}`);
@@ -762,8 +794,11 @@ function actuallyMigrateType(
       return t.tsNeverKeyword();
 
     case "NullableTypeAnnotation": {
+      const type = migrateType(reporter, state, flowType.typeAnnotation);
       return t.tsUnionType([
-        migrateType(reporter, state, flowType.typeAnnotation),
+        flowType.typeAnnotation.type === "FunctionTypeAnnotation"
+          ? t.tsParenthesizedType(type)
+          : type,
         t.tsNullKeyword(),
         t.tsUndefinedKeyword(),
       ]);
@@ -880,8 +915,25 @@ function actuallyMigrateType(
       if (types.length === 1) {
         return types[0];
       } else {
-        return t.tsIntersectionType(types);
+        return t.tsParenthesizedType(t.tsIntersectionType(types));
       }
+    }
+
+    // `T?.[K]` → `NonNullable<T>[K] | null | undefined`
+    case "OptionalIndexedAccessType": {
+      return t.tsUnionType([
+        t.tsIndexedAccessType(
+          t.tsTypeReference(
+            t.identifier("NonNullable"),
+            t.tsTypeParameterInstantiation([
+              migrateType(reporter, state, flowType.objectType),
+            ])
+          ),
+          migrateType(reporter, state, flowType.indexType)
+        ),
+        t.tsNullKeyword(),
+        t.tsUndefinedKeyword(),
+      ]);
     }
 
     case "StringLiteralTypeAnnotation":
@@ -961,6 +1013,7 @@ function actuallyMigrateType(
       const never: { type: string } = flowType;
       reporter.unhandledFlowInputNode(
         state.config.filePath,
+        // @ts-expect-error loc not found
         flowType.loc as t.SourceLocation,
         (flowType as unknown as { name: string }).name ?? "undefined",
         JSON.stringify(never.type)

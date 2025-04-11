@@ -25,6 +25,22 @@ describe("remove-flow-pragmas", () => {
     expect(await transform(src)).toEqual(expected);
   });
 
+  it("should retain the rest of the comment", async () => {
+    const src = dedent`
+    /**
+     * @flow
+     * @jest-environment jsdom
+     */
+     ${standardProgram}
+    `;
+
+    expect(await transform(src)).toEqual(dedent`
+    /**
+     * @jest-environment jsdom
+     */
+     ${expected}`);
+  });
+
   it("should remove the comment even if it has extra comment marks", async () => {
     const src = dedent`
       // ///// / / / / / /// // // /// ////////// /// // /////// @flow

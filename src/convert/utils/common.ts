@@ -5,6 +5,8 @@ import { TransformerInput } from "../transformer";
 import MigrationReporter from "../../runner/migration-reporter";
 import { logger } from "../../runner/logger";
 
+const FORCE_JSX_COMMENT = "@force-jsx";
+
 /**
  * Determine whether the file contains any JSX
  * @param file : File source to check
@@ -12,6 +14,18 @@ import { logger } from "../../runner/logger";
 export function hasJSX({ file }: TransformerInput): boolean {
   let found = false;
   traverse(file, {
+    Program(path: NodePath<t.Program>) {
+      if (
+        path.node.body?.some((node) =>
+          // @ts-expect-error comments doesn't exist
+          node.comments?.some((comment) =>
+            comment.value.includes(FORCE_JSX_COMMENT)
+          )
+        )
+      ) {
+        found = true;
+      }
+    },
     JSXElement() {
       found = true;
     },
@@ -189,6 +203,19 @@ export function addCommentsAtHeadOfNode(
 
 export function addEmptyLineInProgramPath(path: NodePath<t.Program>) {
   path.unshiftContainer("body", t.noop());
+}
+
+export function remove(
+  path: NodePath<t.Node>,
+  filePath: string,
+  reporter: MigrationReporter
+) {
+  try {
+    path.remove();
+  } catch (e) {
+    // Catch the error so conversion of the file can continue.
+    reporter.error(filePath, e);
+  }
 }
 
 /**

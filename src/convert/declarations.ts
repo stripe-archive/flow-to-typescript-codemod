@@ -62,6 +62,36 @@ const updateReactImports = (
   }
 };
 
+/**
+ * Rename React Router imports for TypeScript
+ */
+const updateReactRouterImports = (
+  node: t.ImportDeclaration,
+  specifier: t.ImportSpecifier
+) => {
+  if (
+    node.source.value === "react-router-dom" &&
+    (specifier.importKind === "type" || node.importKind === "type")
+  ) {
+    // `import type {Match} from 'react-router-dom'` => `import {match} from 'react-router-dom'`
+    if (
+      specifier.type === "ImportSpecifier" &&
+      specifier.imported.type === "Identifier" &&
+      specifier.imported.name === "Match"
+    ) {
+      specifier.imported.name = "match";
+    }
+    // `import {type Match} from 'react-router-dom'` => `import {match} from 'react-router-dom'`
+    if (
+      specifier.type === "ImportSpecifier" &&
+      specifier.local.type === "Identifier" &&
+      specifier.local.name === "Match"
+    ) {
+      specifier.local.name = "match";
+    }
+  }
+};
+
 export function transformDeclarations({
   reporter,
   state,
@@ -106,12 +136,25 @@ export function transformDeclarations({
             (specifier.importKind === "type" || path.node.importKind === "type")
           ) {
             updateReactImports(path.node, specifier);
+            updateReactRouterImports(path.node, specifier);
 
             // `import {type X} from` => `import {X} from`
             if (specifier.importKind === "type") {
               specifier.importKind = null;
             }
           }
+        }
+
+        // `import {type AbstractComponent, ...} from 'react'` => `import {...} from 'react'`
+        if (path.node.source.value === "react") {
+          path.node.specifiers = path.node.specifiers.filter(
+            (s) =>
+              !(
+                s.type === "ImportSpecifier" &&
+                s.imported.type === "Identifier" &&
+                s.imported.name === "AbstractComponent"
+              )
+          );
         }
 
         return;
@@ -260,6 +303,19 @@ export function transformDeclarations({
     },
 
     VariableDeclarator(path) {
+      // `const c: AbstractComponent<Props, RefType> =` → `const c =`
+      if (
+        path.node.id.type === "Identifier" &&
+        path.node.id.typeAnnotation?.type === "TypeAnnotation" &&
+        path.node.id.typeAnnotation.typeAnnotation.type ===
+          "GenericTypeAnnotation" &&
+        path.node.id.typeAnnotation.typeAnnotation.id.type === "Identifier" &&
+        path.node.id.typeAnnotation.typeAnnotation.id.name ===
+          "AbstractComponent"
+      ) {
+        path.node.id.typeAnnotation = null;
+      }
+
       if (
         path.parent.type === "VariableDeclaration" &&
         path.parentPath.parent.type !== "ForStatement" &&

@@ -1,5 +1,5 @@
 import { hasJSX } from "./utils/common";
-import { addImports } from "./add-imports";
+import { moveImports } from "./move-imports";
 import { addWatermark } from "./add-watermark";
 import { transformJSX } from "./jsx";
 import { transformDeclarations } from "./declarations";
@@ -46,7 +46,7 @@ export const patternTransformRunner: Transformer =
   standardTransformRunnerFactory(transformPatterns);
 
 export const importTransformRunner: Transformer =
-  standardTransformRunnerFactory(addImports);
+  standardTransformRunnerFactory(moveImports);
 
 export const watermarkTransformRunner: Transformer =
   standardTransformRunnerFactory(addWatermark);

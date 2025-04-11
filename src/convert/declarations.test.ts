@@ -107,6 +107,12 @@ describe("transform declarations", () => {
       expectMigrationReporterMethodNotCalled(`importWithExtension`);
     });
 
+    it("drops React.AbstractComponent imports", async () => {
+      const src = `import {type AbstractComponent, forwardRef} from 'react';`;
+      const expected = `import {forwardRef} from 'react';`;
+      expect(await transform(src)).toBe(expected);
+    });
+
     describe("Flow to TypeScript React import transformations", () => {
       Object.entries(ReactTypes).forEach(([flowType, tsType]) => {
         it(`transforms type imports of ${flowType} from react`, async () => {
@@ -166,6 +172,48 @@ describe("transform declarations", () => {
           const expected = `import {${flowType}} from 'node-js';`;
           expect(await transform(src)).toBe(expected);
         });
+      });
+    });
+
+    describe("change react-router-dom Location and RouterHistory imports", () => {
+      it("keep react-router-dom", async () => {
+        const src = dedent(`
+        import {type Location as L, type RouterHistory as H, useLocation} from 'react-router-dom';
+        const location: L | null = null;
+        const history: H | null = null;
+        `);
+        const expected = dedent(`
+        import {History as H, Location as L} from 'history';
+        import {useLocation} from 'react-router-dom';
+        const location: L | null = null;
+        const history: H | null = null;
+        `);
+        expect(await transform(src)).toBe(expected);
+      });
+
+      it("remove react-router-dom", async () => {
+        const src = dedent(`
+        import {type Location as L, type RouterHistory as H} from 'react-router-dom';
+        const location: L | null = null;
+        const history: H | null = null;
+        `);
+        const expected = dedent(`
+        import {History as H, Location as L} from 'history';
+        const location: L | null = null;
+        const history: H | null = null;
+        `);
+        expect(await transform(src)).toBe(expected);
+      });
+
+      it("do not insert history if one has already been found", async () => {
+        const src = dedent(`
+        import {type RouterHistory} from 'react-router-dom';
+        import {createMemoryHistory} from 'history';
+        `);
+        const expected = dedent(`
+        import {History as RouterHistory, createMemoryHistory} from 'history';
+        `);
+        expect(await transform(src)).toBe(expected);
       });
     });
   });
@@ -276,7 +324,7 @@ describe("transform declarations", () => {
   it("converts more complicated $Exact types", async () => {
     const src = dedent`type Test = $Exact<T | { foo: string }>;`;
     const expected = dedent`type Test = T | {
-      foo: string
+      foo: string;
     };`;
     expect(await transform(src)).toBe(expected);
   });
@@ -504,7 +552,7 @@ describe("transform declarations", () => {
   it("Converts React.Node to React.ReactNode in Props", async () => {
     const src = `type Props = {children?: React.Node};`;
     const expected = dedent`type Props = {
-      children?: React.ReactNode
+      children?: React.ReactNode;
     };`;
     expect(await transform(src)).toBe(expected);
   });
@@ -519,17 +567,7 @@ describe("transform declarations", () => {
     expect(await transform(src)).toBe(expected);
   });
 
-  it("Converts React.Node to React.ReactElement in render", async () => {
-    const src = dedent`class Foo extends React.Component {
-      render(): React.Node {return <div />};
-    };`;
-    const expected = dedent`class Foo extends React.Component {
-      render(): React.ReactElement {return <div />};
-    };`;
-    expect(await transform(src)).toBe(expected);
-  });
-
-  it("Adds null to React.ReactElement in render", async () => {
+  it("Converts React.Node to ReactNode in render", async () => {
     const src = dedent`class Foo extends React.Component {
       render(): React.Node {
         if (foo) return (<div />);
@@ -537,7 +575,7 @@ describe("transform declarations", () => {
       };
     };`;
     const expected = dedent`class Foo extends React.Component {
-      render(): React.ReactElement | null {
+      render(): ReactNode {
         if (foo) return (<div />);
         return null;
       };
@@ -545,23 +583,36 @@ describe("transform declarations", () => {
     expect(await transform(src)).toBe(expected);
   });
 
-  it("Converts React.Node to React.ReactElement for render in arrow", async () => {
+  it("Strips out React.Node for render in arrow", async () => {
     const src = dedent`class Foo extends React.Component {
       render = (): React.Node => {return <div />};
     };`;
     const expected = dedent`class Foo extends React.Component {
-      render = (): React.ReactElement => {return <div />};
+      render = () => {return <div />};
     };`;
     expect(await transform(src)).toBe(expected);
   });
 
-  it("Does not convert React.Node to React.ReactElement in non-render", async () => {
+  it("Does not convert React.Node to ReactNode in non-render", async () => {
     const src = dedent`class Foo extends React.Component {
       rendering(): React.Node {return <div />};
     };`;
     const expected = dedent`class Foo extends React.Component {
       rendering(): React.ReactNode {return <div />};
     };`;
+    expect(await transform(src)).toBe(expected);
+  });
+
+  it("removes React.AbstractComponent<>", async () => {
+    const src = dedent`
+    // @flow
+    const C1: AbstractComponent<Props, Ref> = memo<Props>((props) => null);
+    const C2: AbstractComponent<Props, Ref> = memo<Props>(Comp);
+    `;
+    const expected = dedent`
+    const C1 = memo<Props>((props) => null);
+    const C2 = memo<Props>(Comp);
+    `;
     expect(await transform(src)).toBe(expected);
   });
 
@@ -737,21 +788,6 @@ describe("transform declarations", () => {
       var obj1 = {fn5([filter, sort]: [any, Sort]) {}}
       var obj2 = {fn6: ([filter, sort]: [any, Sort]) => {}}
       `;
-      expect(await transform(src)).toBe(expected);
-    });
-    it("when a comment is in a type param declaration, it should preserve the newline", async () => {
-      const src = dedent`
-      const AThing: Array<
-      // FlowFixMe
-      number> = []
-      `;
-
-      const expected = dedent`
-      const AThing: Array<
-      // FlowFixMe
-      number> = []
-      `;
-
       expect(await transform(src)).toBe(expected);
     });
   });

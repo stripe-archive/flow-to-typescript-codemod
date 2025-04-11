@@ -1,9 +1,14 @@
 # Notes
-## React.Node -> React.ReactElement
+## Strip React.Node from function component return types
 
 One issue we encountered was most codemods convert `React.Node` to `React.ReactNode` when they're a function return type. While the names are similar, they behave [differently](https://stackoverflow.com/questions/58123398/when-to-use-jsx-element-vs-reactnode-vs-reactelement?rq=1). In TypeScript, `React.ReactNode` is primarily used to type things that can be children of a React node, and it includes things like booleans or null. When we return `React.Node`, we're usually annotating a functional component that can be instantiated in JSX (`<Component />`). In TypeScript that's inferred [as React.ReactElement or JSX.Element](https://github.com/TypeScript-cheatsheets/react#function-components). This also needs to be done for the `render` method of class components as well, despite some of the [React types](https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/react/index.d.ts#L3087) suggesting otherwise. If you leave it as `React.ReactNode` you'll receive the error `'Component' cannot be used as a JSX component`. In addition, if the function returns `null`, we have to add a `| null` to allow it. Strings and numbers will throw an error if returned in TS.
 
 [TS Playground](https://www.TypeScriptlang.org/play?#code/JYWwDg9gTgLgBAJQKYEMDG8BmUIjgcilQ3wG4Aoc4AOxiSk3STgAUcwBnOAb3Ln7gcA-AC5BMKDQDmFAL6UkAD0iw4aCNQ7wAKki0BGOAF44ACgCUxgHw8+AojACuUanAA8AE2AA3K3S1uAPRevuTy5Eoq8OqaOnowAEzGZmDsHGJsEJyWRja8AnDAmClpAHQclvkF9khOLu4hVtypWRzlskGNdvzyBQ7OrtSOADbDYQrK0NEaWnC6WgDMyaYtnBlp5mLI6DCl2xgAchAezLm2BUUlreWV3dX99Z4+TattHB3Bz3e9NXWDI2NwpEpmoZnEtAAWZavdatTaIYi7fYwACiwyQICQtDgAB84ENRtZzgJLisyhVidU4A9XE9fM1yR8ugUfvwafiAXJKJQYrNMBAIMkAEIC9EoaimfTmCjkNDDFAcLjzGAAVjgSjo1A8XGRpQAwrhINQsfAqmysScoBYtoi9oi0RiTZTqqT+RBLOzTHS4IErNK7n1agMOaMKCy5DK5QqlfEAGzqxSa7UInb6w0aJ1m6kW+jWlMYO07B2Y7F4gnDZ0XYqmN0eoP1L0hH1+sNU7N-EPDVs9CM8sFwPUACyQaAA1sscnk7p6AwI3FZZ1S3MrDL7F9Vl-Ekmu2xvlUsd7u58qoYej+5lWqz0fN1p49eCkE-eNyEA)
+
+To address the issue, we remove the function component return type annotations and allow TypeScript to infer the return types.
+```ts
+const App = ({ message }: AppProps) => <div>{message}</div>;
+```
 
 ## {\[KeyType\]: ValueType} -> Partial<Record<KeyType, ValueType>>
 Object index types work pretty differently between Flow and TypeScript. Flow allows any type to be an index, while TypeScript supports only strings and numbers. One other difference I found is Flow marks all of the keys of the object as optional by default. To get this same behavior, we have to wrap the object in `Partial`.
@@ -83,7 +88,7 @@ All of the types are imported and namespaced, and the codemod automatically adds
 
 ## React.AbstractComponent
 
-[AbstractComponent](https://flow.org/en/docs/react/types/#toc-react-abstractcomponent) is a Flow type that helps you construct higher order components, and there is no direct TypeScript equivalent. The identical type is a `ComponentType` with the type of `ref` modified. That is a lot more verbose, so we added the `Flow.AbstractComponent` utility to keep things concise.
+[AbstractComponent](https://flow.org/en/docs/react/types/#toc-react-abstractcomponent) is a Flow type that helps you construct higher order components, and there is no direct TypeScript equivalent. We remove the annotations of `AbstractComponent` and allow TypeScript to infer them.
 
 ## export type * from './foo`
 
@@ -94,11 +99,11 @@ In many cases, it's ideal to keep `type` imports when TypeScript supports it. Th
 We've encountered some global Flow types like [`TimeoutID`](https://github.com/facebook/flow/issues/5627) that needed conversions.
 
 
-## React.ElementConfig -> JSX.LibraryManagedAttributes
+## React.ElementConfig -> React.ComponentProps
 
-Flow has a utility type which gets the props from a component. [TypeScript has a similar type](https://github.com/Microsoft/TypeScript/issues/26704) called `JSX.LibraryManagedAttributes` but there's some extra conversion needed to make the type parameters work.
+Flow has a utility type which gets the props from a component. TypeScript has a similar type called `ComponentProps`.
 
-[TS Playground example](https://www.TypeScriptlang.org/play?ts=4.4.2#code/JYWwDg9gTgLgBAJQKYEMDG8BmUIjgcilQ3wG4BYAKCuADsYkpN0k4AFHMAZzgG8q4cGAE8ANowBccAEYQI4lLQqUAvlSppRKLjwAqSLvCQAPBrQAmPZOhgA6AMK5ItJPQA8HCNwB8fAXDQIWkMoAFcMaAAKME4uKU9uAEo-SkFBLlCwRmjYxOVBNWpUuCILbMSpawxbKpgAOQhzVn5iwSIYUKhaOEj-NLg3c2AANzgAem8+uDz-QsL1SjoGJhY4R3Ag13gWwRivLgB+KUVhZXnKESy4fUMEngBeOAApAGUADVsAGWBpKBQoYQAWUUKAA5khzABBGAwKA-UIMLhuG4wAA01wMMAA2gAiPbcHEAXW8ykurF0YkYcEeKLuWPwInEUHwhNIQA)
+[TS Playground example](https://www.typescriptlang.org/play?ts=4.4.2#code/JYWwDg9gTgLgBAJQKYEMDG8BmUIjgcilQ3wG4BYAKCuADsYkpN0k4AFHMAZzgG8q4cGAE8ANowBccAEYQI4lLQqUAvlSppRKLjwAqSLvCQAPBrQAmPZOhgA6AMK5ItJPQA8HCNwB8fAXDQIWkMoAFcMaAAKME4uKU9uAEo-SkFBLlCwRmjYxOVBNWpUuCILbMSpawxbKpgAOQhzVn5iwSIYUKhaOEj-NLg3c2AANzgAem8+uDz-QsL1SjoGJhY4R3Ag13gWwRivLgB+KUVhZXnKESy4fUMEngBeRGI7dectu7dLpAhMa4MYbzKL7XMSMOCPG4wO4AbXwInEUHwAF1SEA)
 
 ## Utility types
 

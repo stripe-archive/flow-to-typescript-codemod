@@ -168,6 +168,15 @@ export function transformExpressions({
         );
       }
     },
+    TSAsExpression(path) {
+      if (
+        path.node.typeAnnotation.type === "TSTypeReference" &&
+        path.node.typeAnnotation.typeName.type === "Identifier" &&
+        path.node.typeAnnotation.typeName.name === "AbstractComponent"
+      ) {
+        path.replaceWith(path.node.expression);
+      }
+    },
     ArrowFunctionExpression(path) {
       // Arrow functions with a generic type parameter (<T>() => {}) often don't typecheck in tsx files
       // since they can be parsed as a JSX tag. To solve this the type parameters usually extend unknown,
@@ -187,6 +196,19 @@ export function transformExpressions({
     },
     CallExpression(path) {
       migrateArgumentsToParameters(path, reporter, state);
+
+      // forwardRef<> in TS has the type parameters in reverse order
+      // `forwardRef<Props, Ref>` → `forwardRef<Ref, Props>`
+      if (
+        path.node.type === "CallExpression" &&
+        path.node.callee.type === "Identifier" &&
+        path.node.callee.name === "forwardRef" &&
+        path.node.typeParameters?.type === "TSTypeParameterInstantiation"
+      ) {
+        path.node.typeParameters.params = path.node.typeParameters.params
+          .concat()
+          .reverse();
+      }
 
       if (
         t.isMemberExpression(path.node.callee) &&
